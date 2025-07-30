@@ -27,26 +27,8 @@ export default function Register() {
     
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Ошибка валидации",
-        description: "Пароли не совпадают. Проверьте правильность ввода",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Слабый пароль",
-        description: "Пароль должен содержать минимум 6 символов",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      toast({
-        title: "Заполните обязательные поля",
-        description: "Укажите ваше имя и фамилию",
+        title: "Ошибка",
+        description: "Пароли не совпадают",
         variant: "destructive",
       });
       return;
@@ -72,11 +54,9 @@ export default function Register() {
       // Force redirect immediately
       setLocation("/");
     } catch (error: any) {
-      const errorMessage = error.message || "Проверьте правильность введенных данных и попробуйте снова";
-      
       toast({
         title: "Ошибка регистрации",
-        description: errorMessage,
+        description: error.message || "Проверьте введенные данные",
         variant: "destructive",
       });
     } finally {
