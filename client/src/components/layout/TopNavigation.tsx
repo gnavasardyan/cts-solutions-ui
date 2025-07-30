@@ -25,7 +25,7 @@ export function TopNavigation() {
             {/* Title in the center */}
             <div className="flex-1 text-center">
               <h1 className="text-xl font-bold text-gray-900">
-                Система прослеживаемости Металлоконструкции
+                Система прослеживаемости металлоконструкции
               </h1>
             </div>
           
