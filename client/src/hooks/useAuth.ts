@@ -18,8 +18,8 @@ export function useAuth() {
     },
     retry: false,
     enabled: !!token,
-    staleTime: 0, // Always refetch to get latest auth state
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    refetchOnWindowFocus: false,
   });
 
   return {

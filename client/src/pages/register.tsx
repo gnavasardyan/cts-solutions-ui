@@ -43,18 +43,16 @@ export default function Register() {
       // Store token in localStorage
       localStorage.setItem("authToken", response.token);
       
+      // Set user data directly in cache to avoid delay
+      queryClient.setQueryData(["/api/auth/user"], response.user);
+      
       toast({
         title: "Регистрация успешна",
         description: "Добро пожаловать в систему!",
       });
 
-      // Invalidate and refetch user data to update auth state
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      
-      // Small delay to ensure state updates, then redirect
-      setTimeout(() => {
-        setLocation("/");
-      }, 100);
+      // Force redirect immediately
+      setLocation("/");
     } catch (error: any) {
       toast({
         title: "Ошибка регистрации",
