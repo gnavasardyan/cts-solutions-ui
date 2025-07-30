@@ -2,8 +2,13 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    try {
+      const errorData = await res.json();
+      throw new Error(errorData.message || res.statusText);
+    } catch (parseError) {
+      const text = await res.text();
+      throw new Error(text || res.statusText);
+    }
   }
 }
 
@@ -66,8 +71,15 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
-    await throwIfResNotOk(res);
-    return await res.json();
+    try {
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Произошла ошибка при выполнении запроса");
+    }
   };
 
 export const queryClient = new QueryClient({
