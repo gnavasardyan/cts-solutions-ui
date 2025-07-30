@@ -9,18 +9,19 @@ export function TopNavigation() {
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0">
-              <img 
-                src={logoPath} 
-                alt="CTS Center Trace Solutions" 
-                className="h-10 w-auto"
-              />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Система прослеживаемости</h1>
-              <p className="text-sm text-industrial-gray">Металлоконструкции</p>
-            </div>
+          {/* Logo on the left */}
+          <div className="flex-shrink-0">
+            <img 
+              src={logoPath} 
+              alt="CTS Center Trace Solutions" 
+              className="h-14 w-auto"
+            />
+          </div>
+          
+          {/* Title in the center */}
+          <div className="flex-1 text-center">
+            <h1 className="text-xl font-bold text-gray-900">Система прослеживаемости</h1>
+            <p className="text-sm text-industrial-gray">Металлоконструкции</p>
           </div>
           
           <div className="flex items-center space-x-4">
