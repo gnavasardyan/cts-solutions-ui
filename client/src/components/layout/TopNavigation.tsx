@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
+import logoPath from "@assets/CTS-white-1_1753870337487.png";
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
