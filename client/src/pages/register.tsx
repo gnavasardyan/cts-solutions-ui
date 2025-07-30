@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
+import logoPath from "@assets/CTS-white-1_1753870337487.png";
 
 export default function Register() {
   const [, setLocation] = useLocation();

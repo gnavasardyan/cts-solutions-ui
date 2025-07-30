@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { TopNavigation } from "@/components/layout/TopNavigation";
-import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
+
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Marking from "@/pages/marking";
@@ -21,16 +21,7 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-surface relative">
-      {/* Logo as separate element in top left corner - static positioning */}
-      {isAuthenticated && (
-        <div className="absolute top-4 left-4 z-50">
-          <img 
-            src={logoPath} 
-            alt="CTS Center Trace Solutions" 
-            className="h-12 w-auto"
-          />
-        </div>
-      )}
+
       
       {isAuthenticated && <TopNavigation />}
       
