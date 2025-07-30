@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,8 +24,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavigation />
-      
       <div className="flex">
         <SideNavigation />
         

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,8 +61,6 @@ export default function Scanning() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavigation />
-      
       <div className="flex">
         <SideNavigation />
         

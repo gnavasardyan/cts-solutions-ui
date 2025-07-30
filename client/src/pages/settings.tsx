@@ -1,5 +1,4 @@
 
-import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,6 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavigation />
-      
       <div className="flex">
         <SideNavigation />
         

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,8 +17,6 @@ export default function Tracking() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNavigation />
-      
       <div className="flex">
         <SideNavigation />
         
