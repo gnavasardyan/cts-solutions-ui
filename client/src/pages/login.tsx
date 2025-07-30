@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
 
 export default function Login() {
@@ -32,8 +32,13 @@ export default function Login() {
         description: "Добро пожаловать в систему!",
       });
 
-      // Redirect to dashboard
-      setLocation("/");
+      // Invalidate and refetch user data to update auth state
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Small delay to ensure state updates, then redirect
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Ошибка входа",

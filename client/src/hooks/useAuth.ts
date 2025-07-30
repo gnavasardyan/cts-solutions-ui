@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export function useAuth() {
   const token = localStorage.getItem("authToken");
@@ -18,6 +18,8 @@ export function useAuth() {
     },
     retry: false,
     enabled: !!token,
+    staleTime: 0, // Always refetch to get latest auth state
+    refetchOnWindowFocus: true,
   });
 
   return {
@@ -26,6 +28,8 @@ export function useAuth() {
     isAuthenticated: !!user && !!token,
     logout: () => {
       localStorage.removeItem("authToken");
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.clear();
       window.location.href = "/login";
     },
   };

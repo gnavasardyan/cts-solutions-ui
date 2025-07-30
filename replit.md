@@ -63,10 +63,12 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 30, 2025
-- **Authentication Removed**: Disabled Replit Auth system per user request ("убери аутентификацию")
-- **Simplified Access**: All pages now accessible without login requirements
-- **Mock User**: Backend uses mock user data for development continuity
-- **Database Ready**: PostgreSQL schema initialized and ready for data entry
+- **Authentication System Implemented**: Full JWT-based authentication with bcrypt password hashing
+- **User Registration**: Complete registration system with role-based access control
+- **Company Logo Added**: CTS logo integrated into navigation header
+- **Security**: All API routes protected with authentication middleware
+- **User Roles**: Administrator, Factory Operator, Warehouse Keeper, Site Master, Auditor
+- **Auto-login Fix**: Resolved issue where users needed to refresh after authentication
 
 ## External Dependencies
 
