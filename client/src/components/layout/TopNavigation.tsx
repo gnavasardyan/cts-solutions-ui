@@ -43,12 +43,12 @@ export function TopNavigation() {
                  'Аудитор'}
               </span>
               <Button 
-                variant="ghost" 
-                size="icon"
-                className="min-w-[48px] min-h-[48px]"
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 h-auto"
                 onClick={logout}
               >
-                <i className="fas fa-sign-out-alt"></i>
+                <i className="fas fa-sign-out-alt mr-2"></i>
+                Выйти из системы
               </Button>
             </div>
           </div>
