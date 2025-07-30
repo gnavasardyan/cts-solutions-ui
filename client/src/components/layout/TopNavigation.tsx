@@ -8,11 +8,11 @@ export function TopNavigation() {
   return (
     <>
       {/* Logo positioned at top-left corner as independent element */}
-      <div className="fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-sm rounded p-1">
+      <div className="absolute top-4 left-4 z-50">
         <img 
           src={logoPath} 
           alt="CTS Logo" 
-          className="h-10 w-auto"
+          className="h-12 w-auto"
         />
       </div>
       
