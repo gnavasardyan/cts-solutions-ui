@@ -17,15 +17,20 @@ export function TopNavigation() {
       </div>
       
       <nav className="bg-white shadow-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Left spacer */}
+            <div className="w-1/4"></div>
+            
             {/* Title in the center */}
             <div className="flex-1 text-center">
-              <h1 className="text-xl font-bold text-gray-900">Система прослеживаемости</h1>
-              <p className="text-sm text-industrial-gray">Металлоконструкции</p>
+              <h1 className="text-xl font-bold text-gray-900">
+                Система прослеживаемости Металлоконструкции
+              </h1>
             </div>
           
-            <div className="flex items-center space-x-4">
+            {/* User info aligned to the right */}
+            <div className="w-1/4 flex items-center justify-end space-x-4">
               {/* Offline/Online Status */}
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-industrial-green rounded-full"></div>
