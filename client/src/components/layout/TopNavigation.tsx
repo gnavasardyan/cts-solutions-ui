@@ -7,17 +7,8 @@ export function TopNavigation() {
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
-      <div className="max-w-7xl mx-auto pl-2 pr-4 sm:pr-6 lg:pr-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo in top left corner */}
-          <div className="flex-shrink-0">
-            <img 
-              src={logoPath} 
-              alt="CTS Center Trace Solutions" 
-              className="h-12 w-auto"
-            />
-          </div>
-          
           {/* Title in the center */}
           <div className="flex-1 text-center">
             <h1 className="text-xl font-bold text-gray-900">Система прослеживаемости</h1>
