@@ -63,7 +63,17 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 30, 2025
-- **Authentication System Implemented**: Full JWT-based authentication with bcrypt password hashing
+- **Database Migration**: Successfully migrated from PostgreSQL to SQLite
+  - Installed better-sqlite3 driver for local database storage
+  - Converted all table schemas to SQLite-compatible format
+  - Updated date handling to use Unix timestamps (integer format)
+  - Created initialization script for new database with test data
+  - Database file: `database.sqlite` in project root
+- **Enhanced Error Handling**: Improved authentication error messages
+  - Specific error messages for invalid email, wrong password, deactivated accounts
+  - Better validation feedback on registration forms
+  - Client-side form validation with detailed error descriptions
+- **Authentication System**: Full JWT-based authentication with bcrypt password hashing
 - **User Registration**: Complete registration system with role-based access control
 - **Company Logo Added**: CTS logo integrated into navigation header
 - **Security**: All API routes protected with authentication middleware

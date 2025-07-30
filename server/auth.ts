@@ -32,15 +32,19 @@ export class AuthService {
     }
   }
 
-  static async authenticate(email: string, password: string): Promise<{ user: SafeUser; token: string } | null> {
+  static async authenticate(email: string, password: string): Promise<{ user: SafeUser; token: string; error?: string } | { error: string }> {
     const user = await storage.getUserByEmail(email);
-    if (!user || user.isActive !== 'true') {
-      return null;
+    if (!user) {
+      return { error: 'Пользователь с таким email не найден' };
+    }
+    
+    if (user.isActive !== 'true') {
+      return { error: 'Аккаунт деактивирован. Обратитесь к администратору' };
     }
 
     const isValidPassword = await this.comparePassword(password, user.password);
     if (!isValidPassword) {
-      return null;
+      return { error: 'Неверный пароль' };
     }
 
     const token = this.generateToken(user.id);

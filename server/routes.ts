@@ -14,23 +14,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
-        return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+        return res.status(400).json({ 
+          message: 'Пользователь с таким email уже зарегистрирован. Попробуйте войти в систему или используйте другой email'
+        });
       }
 
       const { user, token } = await AuthService.register(userData);
       
       res.status(201).json({
-        message: 'Пользователь успешно зарегистрирован',
+        message: 'Аккаунт успешно создан! Добро пожаловать в систему',
         user,
         token
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(400).json({ 
-        message: error instanceof z.ZodError 
-          ? error.errors[0]?.message || 'Ошибка валидации данных' 
-          : 'Ошибка регистрации'
-      });
+      
+      let errorMessage = 'Ошибка при создании аккаунта';
+      
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        if (firstError?.path.includes('email')) {
+          errorMessage = 'Введите корректный email адрес';
+        } else if (firstError?.path.includes('password')) {
+          errorMessage = 'Пароль должен содержать минимум 6 символов';
+        } else if (firstError?.path.includes('firstName')) {
+          errorMessage = 'Укажите ваше имя';
+        } else if (firstError?.path.includes('lastName')) {
+          errorMessage = 'Укажите вашу фамилию';
+        } else {
+          errorMessage = firstError?.message || 'Проверьте введенные данные';
+        }
+      }
+      
+      res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -39,8 +55,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const credentials = loginSchema.parse(req.body);
       
       const result = await AuthService.authenticate(credentials.email, credentials.password);
-      if (!result) {
-        return res.status(401).json({ message: 'Неверный email или пароль' });
+      if ('error' in result) {
+        return res.status(401).json({ message: result.error });
       }
 
       res.json({

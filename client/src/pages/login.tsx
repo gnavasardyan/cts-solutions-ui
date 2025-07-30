@@ -38,9 +38,11 @@ export default function Login() {
       // Force redirect immediately
       setLocation("/");
     } catch (error: any) {
+      const errorMessage = error.message || "Проверьте введенные данные и попробуйте снова";
+      
       toast({
         title: "Ошибка входа",
-        description: error.message || "Проверьте email и пароль",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -80,7 +82,9 @@ export default function Login() {
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="h-12"
+                  placeholder="example@company.com"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -92,7 +96,9 @@ export default function Login() {
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   className="h-12"
+                  placeholder="Введите пароль"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
