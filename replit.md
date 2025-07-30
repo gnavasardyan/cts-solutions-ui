@@ -77,6 +77,7 @@ Preferred communication style: Simple, everyday language.
 - **User Roles**: Administrator, Factory Operator, Warehouse Keeper, Site Master, Auditor
 - **Test Credentials**: admin@example.com / admin123 (SQLite database)
 - **Navigation Improvements**: Logo positioned in upper left corner as independent element
+- **GitHub Repository**: https://github.com/gnavasardyan/cts-solutions-ui.git (требует настройки)
 
 ## External Dependencies
 
