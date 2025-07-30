@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
 
 interface NavItem {
   name: string;
@@ -21,6 +22,15 @@ export function SideNavigation() {
 
   return (
     <aside className="w-64 bg-white shadow-lg min-h-screen border-r border-gray-200">
+      {/* Logo section */}
+      <div className="flex items-center justify-center py-6 border-b border-gray-200">
+        <img 
+          src={logoPath} 
+          alt="CTS Center Trace Solutions" 
+          className="h-16 w-auto"
+        />
+      </div>
+      
       <nav className="mt-6">
         <div className="px-4 space-y-2">
           {navItems.map((item) => (
