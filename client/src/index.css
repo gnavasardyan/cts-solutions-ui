@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Industrial color palette */
+  --industrial-blue: hsl(207, 90%, 54%);
+  --industrial-green: hsl(122, 39%, 49%);
+  --industrial-orange: hsl(36, 100%, 48%);
+  --industrial-red: hsl(0, 74%, 52%);
+  --industrial-gray: hsl(0, 0%, 46%);
+  --surface: hsl(0, 0%, 98%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-industrial-blue {
+    color: var(--industrial-blue);
+  }
+  
+  .text-industrial-green {
+    color: var(--industrial-green);
+  }
+  
+  .text-industrial-orange {
+    color: var(--industrial-orange);
+  }
+  
+  .text-industrial-red {
+    color: var(--industrial-red);
+  }
+  
+  .text-industrial-gray {
+    color: var(--industrial-gray);
+  }
+  
+  .bg-industrial-blue {
+    background-color: var(--industrial-blue);
+  }
+  
+  .bg-industrial-green {
+    background-color: var(--industrial-green);
+  }
+  
+  .bg-industrial-orange {
+    background-color: var(--industrial-orange);
+  }
+  
+  .bg-industrial-red {
+    background-color: var(--industrial-red);
+  }
+  
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  
+  .border-industrial-blue {
+    border-color: var(--industrial-blue);
+  }
+  
+  .border-industrial-green {
+    border-color: var(--industrial-green);
+  }
+  
+  .border-industrial-orange {
+    border-color: var(--industrial-orange);
+  }
+  
+  .border-industrial-red {
+    border-color: var(--industrial-red);
+  }
+  
+  /* Touch-friendly minimum sizes for industrial use */
+  .min-w-touch {
+    min-width: 48px;
+  }
+  
+  .min-h-touch {
+    min-height: 48px;
+  }
+}
