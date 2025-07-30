@@ -51,13 +51,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Title */}
         <div className="text-center mb-8">
-          <img 
-            src={logoPath} 
-            alt="CTS Center Trace Solutions" 
-            className="h-16 mx-auto mb-4"
-          />
           <h1 className="text-2xl font-bold text-gray-900">
             Система прослеживаемости
           </h1>
