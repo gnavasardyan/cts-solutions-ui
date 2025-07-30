@@ -1,6 +1,3 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
@@ -14,24 +11,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { useState } from "react";
 
 export default function Dashboard() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const [scannerOpen, setScannerOpen] = useState(false);
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Неавторизован",
-        description: "Вы вышли из системы. Выполняется повторный вход...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
@@ -41,16 +21,7 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/recent-movements"],
   });
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-industrial-blue mx-auto mb-4"></div>
-          <p className="text-industrial-gray">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface">
@@ -208,7 +179,7 @@ export default function Dashboard() {
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-industrial-blue mx-auto"></div>
                       </div>
-                    ) : recentMovements && recentMovements.length > 0 ? (
+                    ) : recentMovements && Array.isArray(recentMovements) && recentMovements.length > 0 ? (
                       recentMovements.map((movement: any) => (
                         <div key={movement.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
                           <div className="flex-shrink-0">
@@ -283,7 +254,7 @@ export default function Dashboard() {
                         <span className="text-sm text-gray-700">В эксплуатации</span>
                       </div>
                       <span className="text-sm font-medium">
-                        {stats?.totalElements ? ((stats.inOperation / stats.totalElements) * 100).toFixed(1) : 0}%
+                        {stats?.totalElements ? ((stats?.inOperation || 0) / stats.totalElements * 100).toFixed(1) : 0}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -292,7 +263,7 @@ export default function Dashboard() {
                         <span className="text-sm text-gray-700">На хранении</span>
                       </div>
                       <span className="text-sm font-medium">
-                        {stats?.totalElements ? ((stats.inStorage / stats.totalElements) * 100).toFixed(1) : 0}%
+                        {stats?.totalElements ? ((stats?.inStorage || 0) / stats.totalElements * 100).toFixed(1) : 0}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -301,7 +272,7 @@ export default function Dashboard() {
                         <span className="text-sm text-gray-700">В пути</span>
                       </div>
                       <span className="text-sm font-medium">
-                        {stats?.totalElements ? ((stats.inTransit / stats.totalElements) * 100).toFixed(1) : 0}%
+                        {stats?.totalElements ? ((stats?.inTransit || 0) / stats.totalElements * 100).toFixed(1) : 0}%
                       </span>
                     </div>
                   </div>

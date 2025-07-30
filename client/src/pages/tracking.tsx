@@ -1,6 +1,3 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
@@ -12,38 +9,12 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 
 export default function Tracking() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Неавторизован",
-        description: "Вы вышли из системы. Выполняется повторный вход...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: elements, isLoading: elementsLoading } = useQuery({
     queryKey: ["/api/elements"],
   });
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-industrial-blue mx-auto mb-4"></div>
-          <p className="text-industrial-gray">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface">
@@ -122,7 +93,7 @@ export default function Tracking() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-industrial-blue mx-auto mb-4"></div>
                   <p className="text-industrial-gray">Загрузка элементов...</p>
                 </div>
-              ) : elements && elements.length > 0 ? (
+              ) : elements && Array.isArray(elements) && elements.length > 0 ? (
                 <div className="space-y-4">
                   {elements.map((element: any) => (
                     <div key={element.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">

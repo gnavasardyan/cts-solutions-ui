@@ -30,9 +30,10 @@ Preferred communication style: Simple, everyday language.
 ### Key Components
 
 #### Authentication System
-- **Provider**: Replit Auth with OpenID Connect
-- **Session Storage**: PostgreSQL-backed sessions using connect-pg-simple
-- **Authorization**: Role-based access control with 5 user roles:
+- **Status**: Removed per user request for simplified access
+- **Current Setup**: Mock user authentication for development
+- **Note**: System designed with role-based access structure but authentication disabled
+- **User Roles** (for future reference):
   - Administrator (full system access)
   - Factory Operator (marking and production)
   - Warehouse Keeper (storage management)
@@ -54,10 +55,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Flow
 
-1. **Authentication Flow**: Users authenticate via Replit Auth → sessions stored in PostgreSQL → role-based route protection
+1. **Authentication Flow**: Disabled - direct access with mock user for development
 2. **Element Tracking**: QR/barcode scanning → element lookup → status updates → movement logging
 3. **Real-time Updates**: Client queries update automatically via React Query invalidation
 4. **Status Management**: Elements progress through defined states (production → ready_to_ship → in_transit → in_storage → in_assembly → in_operation)
+
+## Recent Changes
+
+### January 30, 2025
+- **Authentication Removed**: Disabled Replit Auth system per user request ("убери аутентификацию")
+- **Simplified Access**: All pages now accessible without login requirements
+- **Mock User**: Backend uses mock user data for development continuity
+- **Database Ready**: PostgreSQL schema initialized and ready for data entry
 
 ## External Dependencies
 

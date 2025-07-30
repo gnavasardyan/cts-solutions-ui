@@ -1,28 +1,29 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertElementSchema, insertMovementSchema, insertControlPointSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Mock user for development without auth
+  const mockUser = {
+    id: "mock-user-1",
+    email: "user@example.com",
+    firstName: "Тестовый",
+    lastName: "Пользователь",
+    role: "administrator",
+    profileImageUrl: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+  // Auth routes (mocked)
+  app.get('/api/auth/user', async (req: any, res) => {
+    res.json(mockUser);
   });
 
   // Dashboard routes
-  app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {
+  app.get('/api/dashboard/stats', async (req, res) => {
     try {
       const stats = await storage.getElementStats();
       res.json(stats);
@@ -32,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/dashboard/recent-movements', isAuthenticated, async (req, res) => {
+  app.get('/api/dashboard/recent-movements', async (req, res) => {
     try {
       const movements = await storage.getRecentMovements(10);
       res.json(movements);
@@ -43,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Element routes
-  app.post('/api/elements', isAuthenticated, async (req: any, res) => {
+  app.post('/api/elements', async (req: any, res) => {
     try {
       const elementData = insertElementSchema.parse(req.body);
       const element = await storage.createElement(elementData);
@@ -54,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements', isAuthenticated, async (req, res) => {
+  app.get('/api/elements', async (req, res) => {
     try {
       const { status, type, locationId } = req.query;
       const elements = await storage.getElements({
@@ -69,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/elements/:id', async (req, res) => {
     try {
       const element = await storage.getElementById(req.params.id);
       if (!element) {
@@ -82,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements/code/:code', isAuthenticated, async (req, res) => {
+  app.get('/api/elements/code/:code', async (req, res) => {
     try {
       const element = await storage.getElementByCode(req.params.code);
       if (!element) {
@@ -95,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/elements/:id/status', isAuthenticated, async (req, res) => {
+  app.patch('/api/elements/:id/status', async (req, res) => {
     try {
       const { status, locationId } = req.body;
       await storage.updateElementStatus(req.params.id, status, locationId);
@@ -107,11 +108,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Movement routes
-  app.post('/api/movements', isAuthenticated, async (req: any, res) => {
+  app.post('/api/movements', async (req: any, res) => {
     try {
       const movementData = insertMovementSchema.parse({
         ...req.body,
-        operatorId: req.user.claims.sub,
+        operatorId: mockUser.id,
       });
       const movement = await storage.createMovement(movementData);
       
@@ -139,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/movements/element/:elementId', isAuthenticated, async (req, res) => {
+  app.get('/api/movements/element/:elementId', async (req, res) => {
     try {
       const movements = await storage.getMovementsByElement(req.params.elementId);
       res.json(movements);
@@ -150,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Control point routes
-  app.post('/api/control-points', isAuthenticated, async (req, res) => {
+  app.post('/api/control-points', async (req, res) => {
     try {
       const pointData = insertControlPointSchema.parse(req.body);
       const point = await storage.createControlPoint(pointData);
@@ -161,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/control-points', isAuthenticated, async (req, res) => {
+  app.get('/api/control-points', async (req, res) => {
     try {
       const points = await storage.getControlPoints();
       res.json(points);

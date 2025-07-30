@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,34 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 
 export default function Settings() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Неавторизован",
-        description: "Вы вышли из системы. Выполняется повторный вход...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-industrial-blue mx-auto mb-4"></div>
-          <p className="text-industrial-gray">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-surface">

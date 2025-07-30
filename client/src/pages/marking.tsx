@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TopNavigation } from "@/components/layout/TopNavigation";
@@ -14,7 +13,6 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function Marking() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     code: "",
@@ -28,20 +26,7 @@ export default function Marking() {
     weight: "",
   });
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Неавторизован",
-        description: "Вы вышли из системы. Выполняется повторный вход...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
+
 
   const createElementMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -102,16 +87,7 @@ export default function Marking() {
     });
   };
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-industrial-blue mx-auto mb-4"></div>
-          <p className="text-industrial-gray">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface">
