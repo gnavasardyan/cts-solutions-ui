@@ -69,18 +69,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
+    // SQLite doesn't support upsert in the same way, so we'll do insert or update
+    const existingUser = await this.getUserByEmail(userData.email);
+    
+    if (existingUser) {
+      const [user] = await db
+        .update(users)
+        .set({
           ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+          updatedAt: Math.floor(Date.now() / 1000),
+        })
+        .where(eq(users.id, existingUser.id))
+        .returning();
+      return user;
+    } else {
+      return this.createUser(userData);
+    }
   }
 
   // Element operations
@@ -103,7 +107,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateElementStatus(id: string, status: string, locationId?: string): Promise<void> {
-    const updateData: any = { status, updatedAt: new Date() };
+    const updateData: any = { status, updatedAt: Math.floor(Date.now() / 1000) };
     if (locationId) {
       updateData.currentLocationId = locationId;
     }
@@ -115,18 +119,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getElements(filters?: { status?: string; type?: string; locationId?: string }): Promise<Element[]> {
-    let query = db.select().from(elements);
-    
     if (filters?.status || filters?.type || filters?.locationId) {
       const conditions = [];
-      if (filters.status) conditions.push(eq(elements.status, filters.status as any));
-      if (filters.type) conditions.push(eq(elements.type, filters.type as any));
+      if (filters.status) conditions.push(eq(elements.status, filters.status));
+      if (filters.type) conditions.push(eq(elements.type, filters.type));
       if (filters.locationId) conditions.push(eq(elements.currentLocationId, filters.locationId));
       
-      query = query.where(and(...conditions));
+      return await db.select().from(elements).where(and(...conditions)).orderBy(desc(elements.createdAt));
     }
     
-    return await query.orderBy(desc(elements.createdAt));
+    return await db.select().from(elements).orderBy(desc(elements.createdAt));
   }
 
   // Movement operations
@@ -179,12 +181,13 @@ export class DatabaseStorage implements IStorage {
     inTransit: number;
     inStorage: number;
   }> {
+    // SQLite uses different syntax for conditional aggregation
     const [stats] = await db
       .select({
         totalElements: count(),
-        inOperation: sql<number>`count(*) filter (where status = 'in_operation')`,
-        inTransit: sql<number>`count(*) filter (where status = 'in_transit')`,
-        inStorage: sql<number>`count(*) filter (where status = 'in_storage')`,
+        inOperation: sql<number>`sum(case when status = 'in_operation' then 1 else 0 end)`,
+        inTransit: sql<number>`sum(case when status = 'in_transit' then 1 else 0 end)`,
+        inStorage: sql<number>`sum(case when status = 'in_storage' then 1 else 0 end)`,
       })
       .from(elements);
     

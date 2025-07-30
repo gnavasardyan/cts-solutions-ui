@@ -1,105 +1,101 @@
 import { sql } from "drizzle-orm";
 import {
   index,
-  jsonb,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
-  varchar,
   integer,
-  decimal,
-  pgEnum,
-} from "drizzle-orm/pg-core";
+  real,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // Session storage table.
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-export const sessions = pgTable(
+export const sessions = sqliteTable(
   "sessions",
   {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
+    sid: text("sid").primaryKey(),
+    sess: text("sess").notNull(), // JSON stored as text
+    expire: integer("expire").notNull(), // Unix timestamp
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
 // User storage table with authentication
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique().notNull(),
-  password: varchar("password").notNull(), // Hashed password
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role").notNull().default("auditor"), // administrator, factory_operator, warehouse_keeper, site_master, auditor
-  isActive: varchar("is_active").notNull().default("true"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  email: text("email").unique().notNull(),
+  password: text("password").notNull(), // Hashed password
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
+  role: text("role").notNull().default("auditor"), // administrator, factory_operator, warehouse_keeper, site_master, auditor
+  isActive: text("is_active").notNull().default("true"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").default(sql`(unixepoch())`),
 });
 
-// Element status enum
-export const elementStatusEnum = pgEnum("element_status", [
+// Element status values (SQLite doesn't have enums)
+export const elementStatusValues = [
   "production",
-  "ready_to_ship",
+  "ready_to_ship", 
   "in_transit",
   "in_storage",
   "in_assembly",
   "in_operation",
-]);
+] as const;
 
-// Element type enum
-export const elementTypeEnum = pgEnum("element_type", [
+// Element type values (SQLite doesn't have enums)
+export const elementTypeValues = [
   "beam",
   "column", 
   "truss",
   "connection",
-]);
+] as const;
 
 // Control points
-export const controlPoints = pgTable("control_points", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar("name").notNull(),
-  type: varchar("type").notNull(), // factory, storage, usage_site
+export const controlPoints = sqliteTable("control_points", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // factory, storage, usage_site
   address: text("address"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  createdAt: timestamp("created_at").defaultNow(),
+  latitude: real("latitude"),
+  longitude: real("longitude"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
 });
 
 // Metal structure elements
-export const elements = pgTable("elements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  code: varchar("code").notNull().unique(), // Unique DataMatrix code
-  type: elementTypeEnum("type").notNull(),
-  status: elementStatusEnum("status").notNull().default("production"),
-  drawing: varchar("drawing"), // Technical drawing reference
-  batch: varchar("batch"), // Production batch
-  gost: varchar("gost"), // GOST standard
-  length: decimal("length", { precision: 10, scale: 2 }),
-  width: decimal("width", { precision: 10, scale: 2 }),
-  height: decimal("height", { precision: 10, scale: 2 }),
-  weight: decimal("weight", { precision: 10, scale: 2 }),
-  currentLocationId: varchar("current_location_id"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const elements = sqliteTable("elements", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  code: text("code").notNull().unique(), // Unique DataMatrix code
+  type: text("type").notNull(),
+  status: text("status").notNull().default("production"),
+  drawing: text("drawing"), // Technical drawing reference
+  batch: text("batch"), // Production batch
+  gost: text("gost"), // GOST standard
+  length: real("length"),
+  width: real("width"),
+  height: real("height"),
+  weight: real("weight"),
+  currentLocationId: text("current_location_id"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").default(sql`(unixepoch())`),
 });
 
 // Movement tracking
-export const movements = pgTable("movements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  elementId: varchar("element_id").notNull(),
-  fromLocationId: varchar("from_location_id"),
-  toLocationId: varchar("to_location_id").notNull(),
-  operation: varchar("operation").notNull(), // reception, shipping, inventory
-  operatorId: varchar("operator_id").notNull(),
+export const movements = sqliteTable("movements", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  elementId: text("element_id").notNull(),
+  fromLocationId: text("from_location_id"),
+  toLocationId: text("to_location_id").notNull(),
+  operation: text("operation").notNull(), // reception, shipping, inventory
+  operatorId: text("operator_id").notNull(),
   comments: text("comments"),
-  photoUrl: varchar("photo_url"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
-  timestamp: timestamp("timestamp").defaultNow(),
+  photoUrl: text("photo_url"),
+  latitude: real("latitude"),
+  longitude: real("longitude"),
+  timestamp: integer("timestamp").default(sql`(unixepoch())`),
 });
 
 // Relations
