@@ -40,12 +40,12 @@ Preferred communication style: Simple, everyday language.
   - Site Master (deployment tracking)
   - Auditor (read-only access)
 
-#### Database Schema
-- **Users Table**: Stores user profiles and role assignments
+#### Database Schema (SQLite)
+- **Users Table**: Stores user profiles and role assignments with integer timestamps
 - **Elements Table**: Metal construction items with unique codes, specifications, and status tracking
-- **Movements Table**: Historical log of element location changes
+- **Movements Table**: Historical log of element location changes with Unix timestamps
 - **Control Points Table**: Physical locations in the tracking system
-- **Sessions Table**: Persistent session storage for authentication
+- **Sessions Table**: Session storage using text for JSON data and integer timestamps
 
 #### UI/UX Design
 - **Responsive Design**: Adaptive layout from mobile (5") to desktop (24") screens
@@ -63,24 +63,26 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### January 30, 2025
-- **Authentication System Implemented**: Full JWT-based authentication with bcrypt password hashing
+- **Database Migration to SQLite**: Successfully migrated from PostgreSQL to SQLite for improved portability
+  - Updated schema from pg-core to sqlite-core types (pgTable → sqliteTable)
+  - Changed timestamp fields to integer Unix timestamps for SQLite compatibility
+  - Modified decimal/numeric fields to real type for SQLite
+  - Installed better-sqlite3 driver package
+  - Updated storage layer for SQLite-specific SQL syntax
+  - Created database initialization with sample data and admin user
+- **Authentication System**: Full JWT-based authentication with bcrypt password hashing
 - **User Registration**: Complete registration system with role-based access control
-- **Company Logo Added**: CTS logo integrated into navigation header
+- **Company Logo**: CTS logo integrated into navigation header
 - **Security**: All API routes protected with authentication middleware
 - **User Roles**: Administrator, Factory Operator, Warehouse Keeper, Site Master, Auditor
-- **Auto-login Fix**: Resolved issue where users needed to refresh after authentication
-- **Navigation Improvements**: 
-  - Fixed duplicate logo displays across pages
-  - Repositioned logo to upper left corner as independent element
-  - Logo remains static during scrolling
-  - Logo displays on login/register pages and main application
-- **Git Repository**: All project files committed to version control
+- **Test Credentials**: admin@example.com / admin123 (SQLite database)
+- **Navigation Improvements**: Logo positioned in upper left corner as independent element
 
 ## External Dependencies
 
 ### Production Dependencies
-- **Database**: Neon PostgreSQL (serverless)
-- **Authentication**: Replit Auth service
+- **Database**: SQLite with better-sqlite3 driver (local file-based)
+- **Authentication**: Custom JWT-based authentication with bcrypt
 - **UI Framework**: Radix UI component primitives
 - **State Management**: TanStack Query for API state
 - **Form Handling**: React Hook Form with Zod validation
@@ -100,17 +102,16 @@ Preferred communication style: Simple, everyday language.
 3. **Database**: Drizzle migrations applied via `npm run db:push`
 
 ### Environment Variables
-- `DATABASE_URL`: PostgreSQL connection string (required)
-- `REPL_ID`: Replit environment identifier
-- `SESSION_SECRET`: Session encryption key
-- `ISSUER_URL`: OpenID Connect issuer (defaults to Replit)
+- `JWT_SECRET`: Secret key for JWT token encryption
+- `DATABASE_FILE`: SQLite database file path (defaults to ./database.sqlite)
+- `NODE_ENV`: Environment mode (development/production)
 
 ### Production Considerations
-- **Session Persistence**: PostgreSQL-backed sessions survive server restarts
-- **Database Migrations**: Schema changes managed through Drizzle migrations
+- **Database**: SQLite file-based storage for easy deployment and portability
+- **Authentication**: JWT tokens with secure bcrypt password hashing
 - **Static Assets**: Frontend assets served by Express in production
 - **Error Handling**: Comprehensive error boundaries and API error responses
-- **Security**: HTTPS-only cookies, CSRF protection via session-based auth
+- **Security**: Secure JWT tokens, bcrypt password protection, input validation
 
 ### Mobile Support
 - **Progressive Web App**: Configured for mobile installation
