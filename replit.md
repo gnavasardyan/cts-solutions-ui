@@ -69,6 +69,12 @@ Preferred communication style: Simple, everyday language.
 - **Security**: All API routes protected with authentication middleware
 - **User Roles**: Administrator, Factory Operator, Warehouse Keeper, Site Master, Auditor
 - **Auto-login Fix**: Resolved issue where users needed to refresh after authentication
+- **Navigation Improvements**: 
+  - Fixed duplicate logo displays across pages
+  - Repositioned logo to upper left corner as independent element
+  - Logo remains static during scrolling
+  - Logo displays on login/register pages and main application
+- **Git Repository**: All project files committed to version control
 
 ## External Dependencies
 
