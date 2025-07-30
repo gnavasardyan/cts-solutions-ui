@@ -44,11 +44,10 @@ export function TopNavigation() {
               </span>
               <Button 
                 variant="destructive"
-                size="sm"
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto"
                 onClick={logout}
               >
-                <i className="fas fa-sign-out-alt mr-1 text-xs"></i>
+                <i className="fas fa-sign-out-alt mr-1"></i>
                 Выйти
               </Button>
             </div>
