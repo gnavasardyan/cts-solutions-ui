@@ -1,29 +1,73 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertElementSchema, insertMovementSchema, insertControlPointSchema } from "@shared/schema";
+import { insertElementSchema, insertMovementSchema, insertControlPointSchema, loginSchema, registerSchema } from "@shared/schema";
 import { z } from "zod";
+import { AuthService, authenticateToken, requireRole, type AuthRequest } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Mock user for development without auth
-  const mockUser = {
-    id: "mock-user-1",
-    email: "user@example.com",
-    firstName: "Тестовый",
-    lastName: "Пользователь",
-    role: "administrator",
-    profileImageUrl: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  // Authentication routes
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const userData = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+      }
 
-  // Auth routes (mocked)
-  app.get('/api/auth/user', async (req: any, res) => {
-    res.json(mockUser);
+      const { user, token } = await AuthService.register(userData);
+      
+      res.status(201).json({
+        message: 'Пользователь успешно зарегистрирован',
+        user,
+        token
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(400).json({ 
+        message: error instanceof z.ZodError 
+          ? error.errors[0]?.message || 'Ошибка валидации данных' 
+          : 'Ошибка регистрации'
+      });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const credentials = loginSchema.parse(req.body);
+      
+      const result = await AuthService.authenticate(credentials.email, credentials.password);
+      if (!result) {
+        return res.status(401).json({ message: 'Неверный email или пароль' });
+      }
+
+      res.json({
+        message: 'Успешный вход в систему',
+        user: result.user,
+        token: result.token
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(400).json({ 
+        message: error instanceof z.ZodError 
+          ? error.errors[0]?.message || 'Ошибка валидации данных' 
+          : 'Ошибка входа в систему'
+      });
+    }
+  });
+
+  app.get('/api/auth/user', authenticateToken, async (req: any, res) => {
+    res.json(req.user);
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    res.json({ message: 'Выход выполнен успешно' });
   });
 
   // Dashboard routes
-  app.get('/api/dashboard/stats', async (req, res) => {
+  app.get('/api/dashboard/stats', authenticateToken, async (req: any, res) => {
     try {
       const stats = await storage.getElementStats();
       res.json(stats);
@@ -33,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/dashboard/recent-movements', async (req, res) => {
+  app.get('/api/dashboard/recent-movements', authenticateToken, async (req: any, res) => {
     try {
       const movements = await storage.getRecentMovements(10);
       res.json(movements);
@@ -44,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Element routes
-  app.post('/api/elements', async (req: any, res) => {
+  app.post('/api/elements', authenticateToken, requireRole(['administrator', 'factory_operator']), async (req: any, res) => {
     try {
       const elementData = insertElementSchema.parse(req.body);
       const element = await storage.createElement(elementData);
@@ -55,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements', async (req, res) => {
+  app.get('/api/elements', authenticateToken, async (req: any, res) => {
     try {
       const { status, type, locationId } = req.query;
       const elements = await storage.getElements({
@@ -70,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements/:id', async (req, res) => {
+  app.get('/api/elements/:id', authenticateToken, async (req: any, res) => {
     try {
       const element = await storage.getElementById(req.params.id);
       if (!element) {
@@ -83,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/elements/code/:code', async (req, res) => {
+  app.get('/api/elements/code/:code', authenticateToken, async (req: any, res) => {
     try {
       const element = await storage.getElementByCode(req.params.code);
       if (!element) {
@@ -96,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/elements/:id/status', async (req, res) => {
+  app.patch('/api/elements/:id/status', authenticateToken, requireRole(['administrator', 'factory_operator', 'warehouse_keeper', 'site_master']), async (req: any, res) => {
     try {
       const { status, locationId } = req.body;
       await storage.updateElementStatus(req.params.id, status, locationId);
@@ -108,11 +152,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Movement routes
-  app.post('/api/movements', async (req: any, res) => {
+  app.post('/api/movements', authenticateToken, requireRole(['administrator', 'factory_operator', 'warehouse_keeper', 'site_master']), async (req: any, res) => {
     try {
       const movementData = insertMovementSchema.parse({
         ...req.body,
-        operatorId: mockUser.id,
+        operatorId: req.user.id,
       });
       const movement = await storage.createMovement(movementData);
       
@@ -140,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/movements/element/:elementId', async (req, res) => {
+  app.get('/api/movements/element/:elementId', authenticateToken, async (req: any, res) => {
     try {
       const movements = await storage.getMovementsByElement(req.params.elementId);
       res.json(movements);
@@ -151,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Control point routes
-  app.post('/api/control-points', async (req, res) => {
+  app.post('/api/control-points', authenticateToken, requireRole(['administrator']), async (req: any, res) => {
     try {
       const pointData = insertControlPointSchema.parse(req.body);
       const point = await storage.createControlPoint(pointData);
@@ -162,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/control-points', async (req, res) => {
+  app.get('/api/control-points', authenticateToken, async (req: any, res) => {
     try {
       const points = await storage.getControlPoints();
       res.json(points);

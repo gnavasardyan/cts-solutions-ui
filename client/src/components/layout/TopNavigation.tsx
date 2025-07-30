@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import logoPath from "@assets/photo_2025-07-30_11-09-11_1753863090708.jpg";
 
 export function TopNavigation() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
@@ -10,7 +11,11 @@ export function TopNavigation() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
-              <i className="fas fa-industry text-industrial-blue text-2xl"></i>
+              <img 
+                src={logoPath} 
+                alt="CTS Center Trace Solutions" 
+                className="h-12 w-auto"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Система прослеживаемости</h1>
@@ -49,7 +54,7 @@ export function TopNavigation() {
                 variant="ghost" 
                 size="icon"
                 className="min-w-[48px] min-h-[48px]"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={logout}
               >
                 <i className="fas fa-sign-out-alt"></i>
               </Button>
