@@ -21,9 +21,9 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-surface relative">
-      {/* Logo as separate element in top left corner */}
+      {/* Logo as separate element in top left corner - static positioning */}
       {isAuthenticated && (
-        <div className="fixed top-4 left-4 z-50">
+        <div className="absolute top-4 left-4 z-50">
           <img 
             src={logoPath} 
             alt="CTS Center Trace Solutions" 
