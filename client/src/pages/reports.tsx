@@ -43,7 +43,7 @@ export default function Reports() {
                       </div>
                       <Button variant="outline" className="h-10">
                         <i className="fas fa-download"></i>
-                        <span className="ml-2">Создать</span>
+                        <span>Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -62,7 +62,7 @@ export default function Reports() {
                       </div>
                       <Button variant="outline" className="h-10">
                         <i className="fas fa-download"></i>
-                        <span className="ml-2">Создать</span>
+                        <span>Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -81,7 +81,7 @@ export default function Reports() {
                       </div>
                       <Button variant="outline" className="h-10">
                         <i className="fas fa-download"></i>
-                        <span className="ml-2">Создать</span>
+                        <span>Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -100,7 +100,7 @@ export default function Reports() {
                       </div>
                       <Button variant="outline" className="h-10">
                         <i className="fas fa-download"></i>
-                        <span className="ml-2">Создать</span>
+                        <span>Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -152,8 +152,8 @@ export default function Reports() {
                     </div>
                   </div>
                   <Button className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12 mt-4">
-                    <i className="fas fa-chart-bar mr-2"></i>
-                    Сформировать отчет
+                    <i className="fas fa-chart-bar"></i>
+                    <span>Сформировать отчет</span>
                   </Button>
                 </CardContent>
               </Card>
@@ -168,16 +168,16 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full h-12">
-                    <i className="fas fa-file-excel mr-2 text-green-600"></i>
-                    Экспорт в Excel
+                    <i className="fas fa-file-excel text-green-600"></i>
+                    <span>Экспорт в Excel</span>
                   </Button>
                   <Button variant="outline" className="w-full h-12">
-                    <i className="fas fa-file-pdf mr-2 text-red-600"></i>
-                    Экспорт в PDF
+                    <i className="fas fa-file-pdf text-red-600"></i>
+                    <span>Экспорт в PDF</span>
                   </Button>
                   <Button variant="outline" className="w-full h-12">
-                    <i className="fas fa-file-csv mr-2 text-blue-600"></i>
-                    Экспорт в CSV
+                    <i className="fas fa-file-csv text-blue-600"></i>
+                    <span>Экспорт в CSV</span>
                   </Button>
                 </CardContent>
               </Card>

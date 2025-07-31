@@ -63,7 +63,7 @@ export function TopNavigation() {
                   onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt"></i>
-                  <span className="ml-1">Выйти</span>
+                  <span>Выйти</span>
                 </Button>
               </div>
             </div>

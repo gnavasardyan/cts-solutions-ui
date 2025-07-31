@@ -156,7 +156,7 @@ export default function Dashboard() {
                 <div className="flex items-end">
                   <Button className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12">
                     <i className="fas fa-search"></i>
-                    <span className="ml-2">Применить</span>
+                    <span>Применить</span>
                   </Button>
                 </div>
               </div>
@@ -220,21 +220,21 @@ export default function Dashboard() {
                       className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12"
                     >
                       <i className="fas fa-qr-reader"></i>
-                      <span className="ml-2">Сканировать код</span>
+                      <span>Сканировать код</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full border-2 border-industrial-blue text-industrial-blue hover:bg-blue-50 h-12"
                     >
                       <i className="fas fa-plus"></i>
-                      <span className="ml-2">Создать маркировку</span>
+                      <span>Создать маркировку</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full h-12"
                     >
                       <i className="fas fa-file-pdf"></i>
-                      <span className="ml-2">Создать отчет</span>
+                      <span>Создать отчет</span>
                     </Button>
                   </div>
                 </CardContent>

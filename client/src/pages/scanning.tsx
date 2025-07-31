@@ -87,7 +87,7 @@ export default function Scanning() {
                       className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-16 text-lg"
                     >
                       <i className="fas fa-camera text-2xl"></i>
-                      <span className="ml-3">Включить камеру</span>
+                      <span>Включить камеру</span>
                     </Button>
                     <p className="text-sm text-gray-500 mt-2">
                       Наведите камеру на DataMatrix код
@@ -123,7 +123,7 @@ export default function Scanning() {
                       className="w-full h-12"
                     >
                       <i className="fas fa-search"></i>
-                      <span className="ml-2">Найти элемент</span>
+                      <span>Найти элемент</span>
                     </Button>
                   </div>
 
@@ -132,20 +132,20 @@ export default function Scanning() {
                     <h4 className="font-medium text-gray-900 mb-3">Быстрые действия</h4>
                     <div className="grid grid-cols-2 gap-2">
                       <Button variant="outline" className="h-12 text-sm">
-                        <i className="fas fa-truck mr-2"></i>
-                        Отправка
+                        <i className="fas fa-truck"></i>
+                        <span>Отправка</span>
                       </Button>
                       <Button variant="outline" className="h-12 text-sm">
-                        <i className="fas fa-inbox mr-2"></i>
-                        Приемка
+                        <i className="fas fa-inbox"></i>
+                        <span>Приемка</span>
                       </Button>
                       <Button variant="outline" className="h-12 text-sm">
-                        <i className="fas fa-clipboard-list mr-2"></i>
-                        Инвентаризация
+                        <i className="fas fa-clipboard-list"></i>
+                        <span>Инвентаризация</span>
                       </Button>
                       <Button variant="outline" className="h-12 text-sm">
-                        <i className="fas fa-tools mr-2"></i>
-                        Монтаж
+                        <i className="fas fa-tools"></i>
+                        <span>Монтаж</span>
                       </Button>
                     </div>
                   </div>

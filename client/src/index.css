@@ -123,19 +123,33 @@
     border-color: var(--industrial-red);
   }
   
-  /* Button alignment fixes */
-  button {
+  /* Button alignment fixes - strict centering */
+  button, .btn {
     text-align: center !important;
     justify-content: center !important;
+    align-items: center !important;
+    display: flex !important;
   }
   
-  button i {
+  button *, .btn * {
     margin-left: 0 !important;
-  }
-  
-  .button-no-offset {
     margin-right: 0 !important;
+  }
+  
+  button i, .btn i {
     margin-left: 0 !important;
+    margin-right: 8px !important;
+  }
+  
+  button span, .btn span {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .button-centered {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     text-align: center !important;
   }
   
