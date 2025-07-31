@@ -123,34 +123,47 @@
     border-color: var(--industrial-red);
   }
   
-  /* Button alignment fixes - strict centering */
-  button, .btn {
-    text-align: center !important;
-    justify-content: center !important;
-    align-items: center !important;
-    display: flex !important;
-  }
-  
-  button *, .btn * {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  
-  button i, .btn i {
-    margin-left: 0 !important;
-    margin-right: 8px !important;
-  }
-  
-  button span, .btn span {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  
-  .button-centered {
+  /* Button alignment fixes - ABSOLUTE CENTERING */
+  button, .btn, [role="button"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+  
+  /* Remove ALL margins from button content */
+  button *, .btn *, [role="button"] * {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Force center alignment for all button text */
+  button span, .btn span, [role="button"] span {
+    display: inline-block !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Force center alignment for icons */
+  button i, .btn i, [role="button"] i {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+  
+  /* Override any existing margin/padding classes */
+  .ml-1, .ml-2, .ml-3, .mr-1, .mr-2, .mr-3 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Force button content alignment */
+  button > *, .btn > *, [role="button"] > * {
+    flex-shrink: 0 !important;
   }
   
   /* Touch-friendly minimum sizes for industrial use */
