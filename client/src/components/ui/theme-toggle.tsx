@@ -9,14 +9,11 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-9 w-9 min-w-[48px] min-h-[48px]"
-      title="Переключить тему"
+      className="h-9 w-9"
     >
-      {theme === "light" ? (
-        <i className="fas fa-moon text-lg"></i>
-      ) : (
-        <i className="fas fa-sun text-lg"></i>
-      )}
+      <i className="fas fa-sun text-lg rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"></i>
+      <i className="fas fa-moon absolute text-lg rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"></i>
+      <span className="sr-only">Переключить тему</span>
     </Button>
   )
 }
