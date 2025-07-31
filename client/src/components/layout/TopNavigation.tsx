@@ -57,14 +57,13 @@ export function TopNavigation() {
                    user?.role === 'site_master' ? 'Мастер участка' :
                    'Аудитор'}
                 </span>
-                <Button 
-                  variant="destructive"
-                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto logout-button"
+                <button 
+                  className="logout-button bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto rounded"
                   onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt"></i>
                   Выйти
-                </Button>
+                </button>
               </div>
             </div>
           </div>
