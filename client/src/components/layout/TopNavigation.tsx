@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import logoPath from "@assets/CTS-white-1_1753870337487.png";
 
 export function TopNavigation() {
@@ -36,6 +37,9 @@ export function TopNavigation() {
                 <div className="w-3 h-3 bg-industrial-green rounded-full"></div>
                 <span className="text-sm text-industrial-gray">Онлайн</span>
               </div>
+              
+              {/* Theme Toggle */}
+              <ThemeToggle />
               
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative min-w-[48px] min-h-[48px]">

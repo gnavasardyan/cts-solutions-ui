@@ -181,6 +181,27 @@
     margin-right: 4px !important;
     margin-left: 0 !important;
   }
+
+  /* Dark theme specific styling */
+  .dark .bg-white {
+    background-color: hsl(var(--card)) !important;
+  }
+  
+  .dark .text-gray-900 {
+    color: hsl(var(--card-foreground)) !important;
+  }
+  
+  .dark .text-gray-500 {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+  
+  .dark .border-gray-200 {
+    border-color: hsl(var(--border)) !important;
+  }
+  
+  .dark .bg-gray-50 {
+    background-color: hsl(var(--muted)) !important;
+  }
   
   /* Touch-friendly minimum sizes for industrial use */
   .min-w-touch {
