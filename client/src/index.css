@@ -130,7 +130,7 @@
     justify-content: center !important;
     text-align: center !important;
     flex-direction: row !important;
-    gap: 8px !important;
+    gap: 6px !important;
   }
   
   /* Remove ALL margins from button content */
@@ -141,18 +141,20 @@
   
   /* Force center alignment for all button text */
   button span, .btn span, [role="button"] span {
-    display: inline-block !important;
+    display: inline !important;
     text-align: center !important;
     margin: 0 !important;
     padding: 0 !important;
+    line-height: 1 !important;
   }
   
   /* Force center alignment for icons */
   button i, .btn i, [role="button"] i {
-    display: inline-block !important;
+    display: inline !important;
     margin: 0 !important;
     padding: 0 !important;
     text-align: center !important;
+    line-height: 1 !important;
   }
   
   /* Override any existing margin/padding classes */
@@ -161,9 +163,29 @@
     margin-right: 0 !important;
   }
   
-  /* Force button content alignment */
+  /* Force button content alignment - NO flex on children */
   button > *, .btn > *, [role="button"] > * {
     flex-shrink: 0 !important;
+    display: inline !important;
+  }
+  
+  /* Special rule for exit button - FORCE PERFECT CENTER */
+  .logout-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+  }
+  
+  .logout-button i {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .logout-button * {
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   /* Touch-friendly minimum sizes for industrial use */
