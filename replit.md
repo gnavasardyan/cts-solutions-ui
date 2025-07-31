@@ -62,6 +62,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 31, 2025
+- **Dark Theme Implementation**: Added complete dark/light theme support
+  - Created ThemeProvider with localStorage persistence
+  - Added theme toggle button in top navigation (sun/moon icons)
+  - Configured dark mode CSS variables for all components
+  - Theme switches between light and dark modes smoothly
+- **Button Text Alignment**: Fixed critical centering issues across all components
+  - Applied nuclear CSS rules to force perfect text centering
+  - Removed all margin/padding conflicts that caused text shifts
+  - Special fixes for logout button and all form buttons
+  - Used absolute positioning and flex centering for consistent alignment
+
 ### January 30, 2025
 - **Database Migration to SQLite**: Successfully migrated from PostgreSQL to SQLite for improved portability
   - Updated schema from pg-core to sqlite-core types (pgTable → sqliteTable)
