@@ -123,6 +123,18 @@
     border-color: var(--industrial-red);
   }
   
+  /* Button alignment fixes */
+  button {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  
+  .button-no-offset {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    text-align: center !important;
+  }
+  
   /* Touch-friendly minimum sizes for industrial use */
   .min-w-touch {
     min-width: 48px;

@@ -59,7 +59,7 @@ export function TopNavigation() {
                 </span>
                 <Button 
                   variant="destructive"
-                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto text-left"
+                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto"
                   onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt mr-1"></i>
