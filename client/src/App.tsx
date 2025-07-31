@@ -19,20 +19,30 @@ import Register from "@/pages/register";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-surface relative">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-lg">Загрузка...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface relative">
-
-      
       {isAuthenticated && <TopNavigation />}
       
       <Switch>
-        {!isAuthenticated && !isLoading ? (
+        {!isAuthenticated ? (
           <>
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
             <Route path="/" component={Login} />
+            <Route component={NotFound} />
           </>
-        ) : isAuthenticated ? (
+        ) : (
           <>
             <Route path="/" component={Dashboard} />
             <Route path="/marking" component={Marking} />
@@ -40,15 +50,9 @@ function Router() {
             <Route path="/tracking" component={Tracking} />
             <Route path="/reports" component={Reports} />
             <Route path="/settings" component={Settings} />
+            <Route component={NotFound} />
           </>
-        ) : (
-          <Route path="/">
-            <div className="flex items-center justify-center min-h-screen">
-              <div className="text-lg">Загрузка...</div>
-            </div>
-          </Route>
         )}
-        <Route component={NotFound} />
       </Switch>
     </div>
   );
