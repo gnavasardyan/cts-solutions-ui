@@ -62,8 +62,8 @@ export function TopNavigation() {
                   className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs h-auto"
                   onClick={logout}
                 >
-                  <i className="fas fa-sign-out-alt mr-1"></i>
-                  Выйти
+                  <i className="fas fa-sign-out-alt"></i>
+                  <span className="ml-1">Выйти</span>
                 </Button>
               </div>
             </div>

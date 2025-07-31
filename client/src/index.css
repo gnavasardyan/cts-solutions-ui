@@ -129,6 +129,10 @@
     justify-content: center !important;
   }
   
+  button i {
+    margin-left: 0 !important;
+  }
+  
   .button-no-offset {
     margin-right: 0 !important;
     margin-left: 0 !important;

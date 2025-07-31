@@ -71,8 +71,8 @@ export default function Tracking() {
                 </div>
                 <div className="flex items-end">
                   <Button className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12">
-                    <i className="fas fa-search mr-2"></i>
-                    Применить
+                    <i className="fas fa-search"></i>
+                    <span className="ml-2">Применить</span>
                   </Button>
                 </div>
               </div>
@@ -119,12 +119,12 @@ export default function Tracking() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <Button variant="outline" size="sm" className="h-10">
-                            <i className="fas fa-route mr-1"></i>
-                            История
+                            <i className="fas fa-route"></i>
+                            <span className="ml-1">История</span>
                           </Button>
                           <Button variant="outline" size="sm" className="h-10">
-                            <i className="fas fa-map-marker-alt mr-1"></i>
-                            Локация
+                            <i className="fas fa-map-marker-alt"></i>
+                            <span className="ml-1">Локация</span>
                           </Button>
                         </div>
                       </div>

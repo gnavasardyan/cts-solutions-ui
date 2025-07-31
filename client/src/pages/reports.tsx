@@ -42,8 +42,8 @@ export default function Reports() {
                         </div>
                       </div>
                       <Button variant="outline" className="h-10">
-                        <i className="fas fa-download mr-2"></i>
-                        Создать
+                        <i className="fas fa-download"></i>
+                        <span className="ml-2">Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -61,8 +61,8 @@ export default function Reports() {
                         </div>
                       </div>
                       <Button variant="outline" className="h-10">
-                        <i className="fas fa-download mr-2"></i>
-                        Создать
+                        <i className="fas fa-download"></i>
+                        <span className="ml-2">Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -80,8 +80,8 @@ export default function Reports() {
                         </div>
                       </div>
                       <Button variant="outline" className="h-10">
-                        <i className="fas fa-download mr-2"></i>
-                        Создать
+                        <i className="fas fa-download"></i>
+                        <span className="ml-2">Создать</span>
                       </Button>
                     </div>
                   </div>
@@ -99,8 +99,8 @@ export default function Reports() {
                         </div>
                       </div>
                       <Button variant="outline" className="h-10">
-                        <i className="fas fa-download mr-2"></i>
-                        Создать
+                        <i className="fas fa-download"></i>
+                        <span className="ml-2">Создать</span>
                       </Button>
                     </div>
                   </div>

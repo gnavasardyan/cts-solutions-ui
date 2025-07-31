@@ -86,8 +86,8 @@ export default function Scanning() {
                       onClick={() => setScannerOpen(true)}
                       className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-16 text-lg"
                     >
-                      <i className="fas fa-camera text-2xl mr-3"></i>
-                      Включить камеру
+                      <i className="fas fa-camera text-2xl"></i>
+                      <span className="ml-3">Включить камеру</span>
                     </Button>
                     <p className="text-sm text-gray-500 mt-2">
                       Наведите камеру на DataMatrix код
@@ -122,8 +122,8 @@ export default function Scanning() {
                       variant="outline"
                       className="w-full h-12"
                     >
-                      <i className="fas fa-search mr-2"></i>
-                      Найти элемент
+                      <i className="fas fa-search"></i>
+                      <span className="ml-2">Найти элемент</span>
                     </Button>
                   </div>
 

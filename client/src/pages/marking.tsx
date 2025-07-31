@@ -268,8 +268,8 @@ export default function Marking() {
                             </>
                           ) : (
                             <>
-                              <i className="fas fa-save mr-2"></i>
-                              Создать маркировку
+                              <i className="fas fa-save"></i>
+                              <span className="ml-2">Создать маркировку</span>
                             </>
                           )}
                         </Button>

@@ -39,8 +39,8 @@ export default function Dashboard() {
               </div>
               <div className="mt-4 lg:mt-0">
                 <Button className="bg-industrial-blue hover:bg-blue-700 text-white font-medium h-12 min-w-[48px]">
-                  <i className="fas fa-plus mr-2"></i>
-                  Новая маркировка
+                  <i className="fas fa-plus"></i>
+                  <span className="ml-2">Новая маркировка</span>
                 </Button>
               </div>
             </div>
@@ -155,8 +155,8 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-end">
                   <Button className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12">
-                    <i className="fas fa-search mr-2"></i>
-                    Применить
+                    <i className="fas fa-search"></i>
+                    <span className="ml-2">Применить</span>
                   </Button>
                 </div>
               </div>
@@ -219,22 +219,22 @@ export default function Dashboard() {
                       onClick={() => setScannerOpen(true)}
                       className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12"
                     >
-                      <i className="fas fa-qr-reader mr-2"></i>
-                      Сканировать код
+                      <i className="fas fa-qr-reader"></i>
+                      <span className="ml-2">Сканировать код</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full border-2 border-industrial-blue text-industrial-blue hover:bg-blue-50 h-12"
                     >
-                      <i className="fas fa-plus mr-2"></i>
-                      Создать маркировку
+                      <i className="fas fa-plus"></i>
+                      <span className="ml-2">Создать маркировку</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full h-12"
                     >
-                      <i className="fas fa-file-pdf mr-2"></i>
-                      Создать отчет
+                      <i className="fas fa-file-pdf"></i>
+                      <span className="ml-2">Создать отчет</span>
                     </Button>
                   </div>
                 </CardContent>
