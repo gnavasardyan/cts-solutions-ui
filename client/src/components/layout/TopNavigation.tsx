@@ -39,7 +39,6 @@ export function TopNavigation() {
               </div>
               
               {/* Theme Toggle */}
-              <ThemeToggle />
               
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative min-w-[48px] min-h-[48px]">
