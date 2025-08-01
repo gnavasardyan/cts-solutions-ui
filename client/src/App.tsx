@@ -40,7 +40,7 @@ function Router() {
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
             <Route path="/" component={Login} />
-            <Route component={NotFound} />
+            {/* <Route component={NotFound} /> */}
           </>
         ) : (
           <>
@@ -50,7 +50,7 @@ function Router() {
             <Route path="/tracking" component={Tracking} />
             <Route path="/reports" component={Reports} />
             <Route path="/settings" component={Settings} />
-            <Route component={NotFound} />
+            {/* <Route component={NotFound} /> */}
           </>
         )}
       </Switch>
