@@ -21,14 +21,14 @@ export function Sidebar() {
   const [location] = useLocation();
 
   const navItems = [
-    { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master", "auditor"] },
+    { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master"] },
     { path: "/catalog", label: "Каталог", icon: Package, roles: ["administrator", "customer_operator"] },
     { path: "/cart", label: "Корзина", icon: ShoppingCart, roles: ["administrator", "customer_operator"] },
     { path: "/orders", label: "Заказы", icon: FileText, roles: ["administrator", "customer_operator"] },
     { path: "/marking", label: "Маркировка", icon: Tag, roles: ["administrator", "factory_operator"] },
     { path: "/scanning", label: "Сканирование", icon: Scan, roles: ["administrator", "warehouse_keeper", "site_master"] },
     { path: "/tracking", label: "Отслеживание", icon: MapPin, roles: ["administrator", "warehouse_keeper", "site_master"] },
-    { path: "/reports", label: "Отчеты", icon: BarChart3, roles: ["administrator", "auditor"] },
+    { path: "/reports", label: "Отчеты", icon: BarChart3, roles: ["administrator"] },
     { path: "/settings", label: "Настройки", icon: Settings, roles: ["administrator"] },
   ];
 
@@ -89,11 +89,11 @@ export function Sidebar() {
           </div>
           <div className="text-xs bg-blue-600 text-white px-2 py-1 rounded mt-1 inline-block">
             {user?.role === 'administrator' ? 'Администратор' :
-             user?.role === 'customer_operator' ? 'Клиент' :
-             user?.role === 'factory_operator' ? 'Оператор завода' :
-             user?.role === 'warehouse_keeper' ? 'Кладовщик' :
-             user?.role === 'site_master' ? 'Мастер участка' :
-             'Аудитор'}
+             user?.role === 'customer_operator' ? 'Оператор заказчика' :
+             user?.role === 'factory_operator' ? 'Оператор производства' :
+             user?.role === 'warehouse_keeper' ? 'Оператор логистики' :
+             user?.role === 'site_master' ? 'Оператор стройки' :
+             'Оператор'}
           </div>
         </div>
 

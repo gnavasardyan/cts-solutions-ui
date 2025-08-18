@@ -197,7 +197,7 @@ export default function CatalogPage() {
       price: product.price.toString(),
       weight: product.weight?.toString() ?? "",
       dimensions: product.dimensions ?? "",
-      gost: product.gost,
+      gost: product.gost || "",
       specifications: product.specifications ?? "",
       inStock: product.inStock.toString(),
     });
