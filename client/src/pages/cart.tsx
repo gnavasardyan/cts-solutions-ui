@@ -22,10 +22,21 @@ export default function CartPage() {
   // Update cart item mutation
   const updateCartMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      return apiRequest(`/api/cart/${id}`, {
+      const response = await fetch(`/api/cart/${id}`, {
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
         body: JSON.stringify({ quantity }),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update cart item');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
@@ -42,9 +53,19 @@ export default function CartPage() {
   // Remove from cart mutation
   const removeFromCartMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/cart/${id}`, {
+      const response = await fetch(`/api/cart/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to remove from cart');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -65,18 +86,29 @@ export default function CartPage() {
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async () => {
-      const totalAmount = cartItems.reduce((total: number, item: any) => 
+      const totalAmount = (cartItems as any[]).reduce((total: number, item: any) => 
         total + (item.product.price * item.quantity), 0
       );
       
-      return apiRequest('/api/orders', {
+      const response = await fetch('/api/orders', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
         body: JSON.stringify({
           totalAmount,
           notes: orderNotes,
           status: 'pending'
         }),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create order');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -106,7 +138,7 @@ export default function CartPage() {
   };
 
   const handleCreateOrder = () => {
-    if (cartItems.length === 0) {
+    if ((cartItems as any[]).length === 0) {
       toast({
         title: "Корзина пуста",
         description: "Добавьте товары в корзину для оформления заказа",
@@ -125,11 +157,11 @@ export default function CartPage() {
     }).format(price);
   };
 
-  const totalAmount = cartItems.reduce((total: number, item: any) => 
+  const totalAmount = (cartItems as any[]).reduce((total: number, item: any) => 
     total + (item.product.price * item.quantity), 0
   );
 
-  const totalItems = cartItems.reduce((total: number, item: any) => total + item.quantity, 0);
+  const totalItems = (cartItems as any[]).reduce((total: number, item: any) => total + item.quantity, 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -167,7 +199,7 @@ export default function CartPage() {
             </Card>
           ))}
         </div>
-      ) : cartItems.length === 0 ? (
+      ) : (cartItems as any[]).length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <ShoppingCart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -186,7 +218,7 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((item: any) => (
+            {(cartItems as any[]).map((item: any) => (
               <Card key={item.id} data-testid={`cart-item-${item.id}`}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start gap-4">
