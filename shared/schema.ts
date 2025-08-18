@@ -30,7 +30,7 @@ export const users = sqliteTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
-  role: text("role").notNull().default("customer_operator"), // administrator, customer_operator, factory_operator, warehouse_keeper, site_master, auditor
+  role: text("role").notNull().default("customer_operator"), // administrator, customer_operator (заказчик), factory_operator (производство), warehouse_keeper (логистика), site_master (стройка), auditor
   isActive: text("is_active").notNull().default("true"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
@@ -308,9 +308,9 @@ export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 // Role constants for easy reference
 export const UserRoles = {
   ADMINISTRATOR: "administrator",
-  CUSTOMER_OPERATOR: "customer_operator", 
-  FACTORY_OPERATOR: "factory_operator",
-  WAREHOUSE_KEEPER: "warehouse_keeper", 
-  SITE_MASTER: "site_master",
-  AUDITOR: "auditor"
+  CUSTOMER_OPERATOR: "customer_operator", // Оператор заказчика: контроль заказов, аналитика
+  FACTORY_OPERATOR: "factory_operator", // Оператор производства: учет выпуска, маркировка
+  WAREHOUSE_KEEPER: "warehouse_keeper", // Оператор логистики: мониторинг перемещений
+  SITE_MASTER: "site_master", // Оператор стройки
+  AUDITOR: "auditor" // Аудитор
 } as const;

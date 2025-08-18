@@ -35,9 +35,10 @@ Preferred communication style: Simple, everyday language.
 - **Note**: System designed with role-based access structure but authentication disabled
 - **User Roles** (for future reference):
   - Administrator (full system access)
-  - Factory Operator (marking and production)
-  - Warehouse Keeper (storage management)
-  - Site Master (deployment tracking)
+  - Оператор заказчика (контроль заказов, аналитика)
+  - Оператор производства (учет выпуска, маркировка)
+  - Оператор логистики (мониторинг перемещений)
+  - Оператор стройки
   - Auditor (read-only access)
 
 #### Database Schema (SQLite)
@@ -61,6 +62,16 @@ Preferred communication style: Simple, everyday language.
 4. **Status Management**: Elements progress through defined states (production → ready_to_ship → in_transit → in_storage → in_assembly → in_operation)
 
 ## Recent Changes
+
+### January 18, 2025
+
+- **Обновлены роли пользователей в системе регистрации**: Названия ролей теперь соответствуют их функциям
+  - Оператор заказчика: контроль заказов, аналитика
+  - Оператор производства: учет выпуска, маркировка  
+  - Оператор логистики: мониторинг перемещений (ранее warehouse_keeper)
+  - Оператор стройки: работа на строительных объектах
+  - Обновлена документация схемы и константы ролей
+  - Описания ролей добавлены в форму регистрации для ясности
 
 ### January 18, 2025
 - **Расширенный каталог продукции**: Добавлен детализированный каталог металлоконструкций
