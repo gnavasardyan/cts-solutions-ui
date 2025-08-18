@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertElementSchema, insertMovementSchema, insertControlPointSchema, loginSchema, registerSchema } from "@shared/schema";
+import { insertElementSchema, insertMovementSchema, insertControlPointSchema, loginSchema, registerSchema, insertProductSchema, insertOrderSchema, insertCartItemSchema, UserRoles } from "@shared/schema";
 import { z } from "zod";
 import { AuthService, authenticateToken, requireRole, type AuthRequest } from "./auth";
 
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Element routes
-  app.post('/api/elements', authenticateToken, requireRole(['administrator', 'factory_operator']), async (req: any, res) => {
+  app.post('/api/elements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR]), async (req: any, res) => {
     try {
       const elementData = insertElementSchema.parse(req.body);
       const element = await storage.createElement(elementData);
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/elements/:id/status', authenticateToken, requireRole(['administrator', 'factory_operator', 'warehouse_keeper', 'site_master']), async (req: any, res) => {
+  app.patch('/api/elements/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR, UserRoles.LOGISTICS_OPERATOR, UserRoles.CONSTRUCTION_OPERATOR]), async (req: any, res) => {
     try {
       const { status, locationId } = req.body;
       await storage.updateElementStatus(req.params.id, status, locationId);
@@ -152,11 +152,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Movement routes
-  app.post('/api/movements', authenticateToken, requireRole(['administrator', 'factory_operator', 'warehouse_keeper', 'site_master']), async (req: any, res) => {
+  app.post('/api/movements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR, UserRoles.LOGISTICS_OPERATOR, UserRoles.CONSTRUCTION_OPERATOR]), async (req: any, res) => {
     try {
       const movementData = insertMovementSchema.parse({
         ...req.body,
-        operatorId: req.user.id,
+        operatorId: req.user!.id,
       });
       const movement = await storage.createMovement(movementData);
       
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Control point routes
-  app.post('/api/control-points', authenticateToken, requireRole(['administrator']), async (req: any, res) => {
+  app.post('/api/control-points', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {
       const pointData = insertControlPointSchema.parse(req.body);
       const point = await storage.createControlPoint(pointData);
@@ -213,6 +213,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching control points:", error);
       res.status(500).json({ message: "Failed to fetch control points" });
+    }
+  });
+
+  // Product routes for customer operators
+  app.get('/api/products', authenticateToken, async (req: any, res) => {
+    try {
+      const { category, search } = req.query;
+      const products = await storage.getProducts({
+        category: category as string,
+        search: search as string,
+      });
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.get('/api/products/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const product = await storage.getProductById(req.params.id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+
+  app.post('/api/products', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(400).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Cart routes for customer operators
+  app.get('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      const cartItems = await storage.getCartItems(req.user.id);
+      res.json(cartItems);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      res.status(500).json({ message: "Failed to fetch cart" });
+    }
+  });
+
+  app.post('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      const cartData = insertCartItemSchema.parse({
+        ...req.body,
+        userId: req.user.id,
+      });
+      const cartItem = await storage.addToCart(cartData);
+      res.json(cartItem);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      res.status(400).json({ message: "Failed to add to cart" });
+    }
+  });
+
+  app.patch('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+    try {
+      const { quantity } = req.body;
+      await storage.updateCartItem(req.params.id, quantity);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating cart item:", error);
+      res.status(500).json({ message: "Failed to update cart item" });
+    }
+  });
+
+  app.delete('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+    try {
+      await storage.removeFromCart(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      res.status(500).json({ message: "Failed to remove from cart" });
+    }
+  });
+
+  // Order routes for customer operators
+  app.get('/api/orders', authenticateToken, async (req: any, res) => {
+    try {
+      let orders;
+      if (req.user?.role === UserRoles.ADMINISTRATOR) {
+        orders = await storage.getAllOrders();
+      } else if (req.user?.role === UserRoles.CUSTOMER_OPERATOR && req.user?.id) {
+        orders = await storage.getOrdersByCustomer(req.user.id);
+      } else {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.post('/api/orders', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      const orderData = insertOrderSchema.parse({
+        ...req.body,
+        customerId: req.user.id,
+      });
+      const order = await storage.createOrder(orderData);
+      res.json(order);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(400).json({ message: "Failed to create order" });
+    }
+  });
+
+  app.patch('/api/orders/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR]), async (req: any, res) => {
+    try {
+      const { status } = req.body;
+      await storage.updateOrderStatus(req.params.id, status);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ message: "Failed to update order status" });
     }
   });
 

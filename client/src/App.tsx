@@ -15,6 +15,9 @@ import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import Catalog from "@/pages/catalog";
+import Cart from "@/pages/cart";
+import Orders from "@/pages/orders";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -50,6 +53,9 @@ function Router() {
             <Route path="/tracking" component={Tracking} />
             <Route path="/reports" component={Reports} />
             <Route path="/settings" component={Settings} />
+            <Route path="/catalog" component={Catalog} />
+            <Route path="/cart" component={Cart} />
+            <Route path="/orders" component={Orders} />
             {/* <Route component={NotFound} /> */}
           </>
         )}

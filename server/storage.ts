@@ -3,6 +3,10 @@ import {
   elements,
   movements,
   controlPoints,
+  products,
+  orders,
+  orderItems,
+  cartItems,
   type User,
   type UpsertUser,
   type Element,
@@ -11,6 +15,14 @@ import {
   type InsertMovement,
   type ControlPoint,
   type InsertControlPoint,
+  type Product,
+  type InsertProduct,
+  type Order,
+  type InsertOrder,
+  type OrderItem,
+  type InsertOrderItem,
+  type CartItem,
+  type InsertCartItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql } from "drizzle-orm";
@@ -46,6 +58,23 @@ export interface IStorage {
     inTransit: number;
     inStorage: number;
   }>;
+
+  // Product operations
+  getProducts(filters?: { category?: string; search?: string }): Promise<Product[]>;
+  getProductById(id: string): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+
+  // Cart operations
+  getCartItems(userId: string): Promise<(CartItem & { product: Product })[]>;
+  addToCart(cartItem: InsertCartItem): Promise<CartItem>;
+  updateCartItem(id: string, quantity: number): Promise<void>;
+  removeFromCart(id: string): Promise<void>;
+
+  // Order operations
+  getOrdersByCustomer(customerId: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
+  getAllOrders(): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User })[]>;
+  createOrder(order: InsertOrder): Promise<Order>;
+  updateOrderStatus(id: string, status: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -197,6 +226,207 @@ export class DatabaseStorage implements IStorage {
       inTransit: Number(stats.inTransit),
       inStorage: Number(stats.inStorage),
     };
+  }
+
+  // Product operations
+  async getProducts(filters?: { category?: string; search?: string }): Promise<Product[]> {
+    if (filters?.category || filters?.search) {
+      const conditions = [];
+      conditions.push(eq(products.isActive, 'true'));
+      
+      if (filters.category) {
+        conditions.push(eq(products.category, filters.category));
+      }
+      
+      if (filters.search) {
+        const searchTerm = `%${filters.search}%`;
+        conditions.push(
+          sql`${products.name} LIKE ${searchTerm} OR ${products.description} LIKE ${searchTerm}`
+        );
+      }
+      
+      return await db.select().from(products).where(and(...conditions)).orderBy(products.name);
+    }
+    
+    return await db
+      .select()
+      .from(products)
+      .where(eq(products.isActive, 'true'))
+      .orderBy(products.name);
+  }
+
+  async getProductById(id: string): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [newProduct] = await db
+      .insert(products)
+      .values(product)
+      .returning();
+    return newProduct;
+  }
+
+  // Cart operations
+  async getCartItems(userId: string): Promise<(CartItem & { product: Product })[]> {
+    return await db
+      .select({
+        id: cartItems.id,
+        userId: cartItems.userId,
+        productId: cartItems.productId,
+        quantity: cartItems.quantity,
+        createdAt: cartItems.createdAt,
+        updatedAt: cartItems.updatedAt,
+        product: products
+      })
+      .from(cartItems)
+      .innerJoin(products, eq(cartItems.productId, products.id))
+      .where(eq(cartItems.userId, userId))
+      .orderBy(desc(cartItems.createdAt));
+  }
+
+  async addToCart(cartItem: InsertCartItem): Promise<CartItem> {
+    // Check if item already exists in cart
+    const [existing] = await db
+      .select()
+      .from(cartItems)
+      .where(and(
+        eq(cartItems.userId, cartItem.userId),
+        eq(cartItems.productId, cartItem.productId)
+      ));
+
+    if (existing) {
+      // Update quantity if item already exists
+      const [updated] = await db
+        .update(cartItems)
+        .set({
+          quantity: existing.quantity + cartItem.quantity,
+          updatedAt: Math.floor(Date.now() / 1000),
+        })
+        .where(eq(cartItems.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Insert new cart item
+      const [newItem] = await db
+        .insert(cartItems)
+        .values(cartItem)
+        .returning();
+      return newItem;
+    }
+  }
+
+  async updateCartItem(id: string, quantity: number): Promise<void> {
+    await db
+      .update(cartItems)
+      .set({
+        quantity,
+        updatedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(cartItems.id, id));
+  }
+
+  async removeFromCart(id: string): Promise<void> {
+    await db.delete(cartItems).where(eq(cartItems.id, id));
+  }
+
+  // Order operations
+  async getOrdersByCustomer(customerId: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]> {
+    const customerOrders = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.customerId, customerId))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersWithItems = await Promise.all(
+      customerOrders.map(async (order) => {
+        const items = await db
+          .select({
+            id: orderItems.id,
+            orderId: orderItems.orderId,
+            productId: orderItems.productId,
+            quantity: orderItems.quantity,
+            price: orderItems.price,
+            createdAt: orderItems.createdAt,
+            product: products
+          })
+          .from(orderItems)
+          .innerJoin(products, eq(orderItems.productId, products.id))
+          .where(eq(orderItems.orderId, order.id));
+        
+        return { ...order, items };
+      })
+    );
+
+    return ordersWithItems;
+  }
+
+  async getAllOrders(): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User })[]> {
+    const allOrders = await db
+      .select({
+        id: orders.id,
+        customerId: orders.customerId,
+        status: orders.status,
+        totalAmount: orders.totalAmount,
+        notes: orders.notes,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        customer: users
+      })
+      .from(orders)
+      .innerJoin(users, eq(orders.customerId, users.id))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersWithItems = await Promise.all(
+      allOrders.map(async (order) => {
+        const items = await db
+          .select({
+            id: orderItems.id,
+            orderId: orderItems.orderId,
+            productId: orderItems.productId,
+            quantity: orderItems.quantity,
+            price: orderItems.price,
+            createdAt: orderItems.createdAt,
+            product: products
+          })
+          .from(orderItems)
+          .innerJoin(products, eq(orderItems.productId, products.id))
+          .where(eq(orderItems.orderId, order.id));
+        
+        return {
+          id: order.id,
+          customerId: order.customerId,
+          status: order.status,
+          totalAmount: order.totalAmount,
+          notes: order.notes,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          items,
+          customer: order.customer
+        };
+      })
+    );
+
+    return ordersWithItems;
+  }
+
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const [newOrder] = await db
+      .insert(orders)
+      .values(order)
+      .returning();
+    return newOrder;
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<void> {
+    await db
+      .update(orders)
+      .set({
+        status,
+        updatedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(orders.id, id));
   }
 }
 

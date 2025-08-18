@@ -30,7 +30,7 @@ export const users = sqliteTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
-  role: text("role").notNull().default("auditor"), // administrator, factory_operator, warehouse_keeper, site_master, auditor
+  role: text("role").notNull().default("customer_operator"), // administrator, customer_operator, production_operator, logistics_operator, construction_operator
   isActive: text("is_active").notNull().default("true"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
@@ -138,6 +138,90 @@ export const movementsRelations = relations(movements, ({ one }) => ({
   }),
 }));
 
+// Product catalog table for customer operators
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // beam, column, truss, connection
+  price: real("price").notNull(),
+  weight: real("weight"),
+  dimensions: text("dimensions"), // stored as JSON string
+  imageUrl: text("image_url"),
+  gost: text("gost"),
+  inStock: integer("in_stock").notNull().default(0),
+  isActive: text("is_active").notNull().default("true"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").default(sql`(unixepoch())`),
+});
+
+// Orders table
+export const orders = sqliteTable("orders", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  customerId: text("customer_id").notNull(),
+  status: text("status").notNull().default("draft"), // draft, pending, approved, in_production, completed, cancelled
+  totalAmount: real("total_amount").notNull().default(0),
+  notes: text("notes"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").default(sql`(unixepoch())`),
+});
+
+// Order items table
+export const orderItems = sqliteTable("order_items", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  orderId: text("order_id").notNull(),
+  productId: text("product_id").notNull(),
+  quantity: integer("quantity").notNull(),
+  price: real("price").notNull(),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+});
+
+// Shopping cart table
+export const cartItems = sqliteTable("cart_items", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  userId: text("user_id").notNull(),
+  productId: text("product_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at").default(sql`(unixepoch())`),
+});
+
+// Additional relations
+export const productsRelations = relations(products, ({ many }) => ({
+  orderItems: many(orderItems),
+  cartItems: many(cartItems),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  customer: one(users, {
+    fields: [orders.customerId],
+    references: [users.id],
+  }),
+  items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
+  user: one(users, {
+    fields: [cartItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [cartItems.productId],
+    references: [products.id],
+  }),
+}));
+
 // Insert schemas
 export const insertElementSchema = createInsertSchema(elements).omit({
   id: true,
@@ -171,7 +255,31 @@ export const registerSchema = z.object({
   password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
   firstName: z.string().min(1, "Имя обязательно"),
   lastName: z.string().min(1, "Фамилия обязательна"),
-  role: z.enum(["administrator", "factory_operator", "warehouse_keeper", "site_master", "auditor"]).default("auditor"),
+  role: z.enum(["administrator", "customer_operator", "production_operator", "logistics_operator", "construction_operator"]).default("customer_operator"),
+});
+
+// New schemas for products and orders
+export const insertProductSchema = createInsertSchema(products).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCartItemSchema = createInsertSchema(cartItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Types
@@ -187,3 +295,20 @@ export type InsertControlPoint = z.infer<typeof insertControlPointSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type CartItem = typeof cartItems.$inferSelect;
+export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+
+// Role constants for easy reference
+export const UserRoles = {
+  ADMINISTRATOR: "administrator",
+  CUSTOMER_OPERATOR: "customer_operator", 
+  PRODUCTION_OPERATOR: "production_operator",
+  LOGISTICS_OPERATOR: "logistics_operator", 
+  CONSTRUCTION_OPERATOR: "construction_operator"
+} as const;
