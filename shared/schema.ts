@@ -143,12 +143,13 @@ export const products = sqliteTable("products", {
   id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category").notNull(), // beam, column, truss, connection
+  category: text("category").notNull(), // beam, column, truss, connection, slab
   price: real("price").notNull(),
   weight: real("weight"),
   dimensions: text("dimensions"), // stored as JSON string
   imageUrl: text("image_url"),
   gost: text("gost"),
+  specifications: text("specifications"), // technical specifications
   inStock: integer("in_stock").notNull().default(0),
   isActive: text("is_active").notNull().default("true"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),

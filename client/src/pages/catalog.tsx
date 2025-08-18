@@ -12,11 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const CATEGORIES = {
   all: "Все категории",
-  beam: "Балки",
+  beam: "Балки и профили",
   column: "Колонны", 
-  truss: "Фермы",
-  connection: "Соединения",
-  slab: "Плиты"
+  truss: "Фермы и связи",
+  connection: "Соединения и крепеж",
+  slab: "Плиты перекрытий"
 };
 
 export default function CatalogPage() {
@@ -210,6 +210,16 @@ export default function CatalogPage() {
                     <br />
                     <span className="text-gray-600 dark:text-gray-400">
                       {parseDimensions(product.dimensions)}
+                    </span>
+                  </div>
+                )}
+
+                {product.specifications && (
+                  <div className="text-sm">
+                    <span className="font-medium">Характеристики:</span>
+                    <br />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {product.specifications}
                     </span>
                   </div>
                 )}

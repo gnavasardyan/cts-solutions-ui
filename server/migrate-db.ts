@@ -86,6 +86,7 @@ async function runMigrations() {
       dimensions TEXT,
       image_url TEXT,
       gost TEXT,
+      specifications TEXT,
       in_stock INTEGER NOT NULL DEFAULT 0,
       is_active TEXT NOT NULL DEFAULT 'true',
       created_at INTEGER DEFAULT (unixepoch()),
