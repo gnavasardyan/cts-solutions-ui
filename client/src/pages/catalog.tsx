@@ -27,7 +27,7 @@ export default function CatalogPage() {
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['/api/products', { category: selectedCategory !== 'all' ? selectedCategory : undefined, search: searchTerm }],
+    queryKey: ['/api/products'],
     enabled: true,
   });
 
@@ -42,7 +42,7 @@ export default function CatalogPage() {
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
       return apiRequest('/api/cart', {
         method: 'POST',
-        body: JSON.stringify({ productId, quantity }),
+        body: { productId, quantity },
       });
     },
     onSuccess: () => {
@@ -73,7 +73,8 @@ export default function CatalogPage() {
     }).format(price);
   };
 
-  const formatWeight = (weight: number) => {
+  const formatWeight = (weight: number | null) => {
+    if (!weight) return 'Не указан';
     return `${weight} кг`;
   };
 
@@ -92,15 +93,15 @@ export default function CatalogPage() {
     }
   };
 
-  const filteredProducts = products.filter((product: Product) => {
+  const filteredProducts = (products as Product[]).filter((product: Product) => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesSearch = !searchTerm || 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const cartItemCount = cartItems.reduce((total: number, item: any) => total + item.quantity, 0);
+  const cartItemCount = (cartItems as any[]).reduce((total: number, item: any) => total + item.quantity, 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
