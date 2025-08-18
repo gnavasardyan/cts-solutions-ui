@@ -22,7 +22,9 @@ export default function Login() {
     setIsLoading(true);
 
     try {
+      console.log("Submitting login form with:", formData);
       const response = await apiRequest("POST", "/api/auth/login", formData);
+      console.log("Login response:", response);
       
       // Store token in localStorage
       localStorage.setItem("authToken", response.token);
@@ -38,6 +40,7 @@ export default function Login() {
       // Force redirect immediately
       setLocation("/");
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Ошибка входа",
         description: error.message || "Проверьте email и пароль",
@@ -80,7 +83,9 @@ export default function Login() {
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="h-12"
+                  placeholder="customer@example.com"
                   required
+                  data-testid="input-email"
                 />
               </div>
               
@@ -92,14 +97,24 @@ export default function Login() {
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   className="h-12"
+                  placeholder="operator123"
                   required
+                  data-testid="input-password"
                 />
+              </div>
+
+              {/* Test credentials info */}
+              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                <p className="font-medium">Тестовые аккаунты:</p>
+                <p>customer@example.com / operator123 (клиент)</p>
+                <p>admin@example.com / admin123 (админ)</p>
               </div>
 
               <Button 
                 type="submit" 
                 className="w-full bg-industrial-blue hover:bg-blue-700 text-white h-12"
                 disabled={isLoading}
+                data-testid="button-submit"
               >
                 {isLoading ? "Вход..." : "Войти"}
               </Button>
