@@ -1,6 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { 
@@ -108,11 +107,6 @@ export function Sidebar() {
 
       {/* User Info & Controls */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
-        {/* Theme Toggle */}
-        <div className="flex justify-center">
-          <ThemeToggle />
-        </div>
-
         {/* User Info */}
         <div className="text-center">
           <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
