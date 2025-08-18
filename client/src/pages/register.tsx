@@ -134,11 +134,10 @@ export default function Register() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="customer_operator">Оператор заказчика (контроль заказов, аналитика)</SelectItem>
-                    <SelectItem value="factory_operator">Оператор производства (учет выпуска, маркировка)</SelectItem>
-                    <SelectItem value="warehouse_keeper">Оператор логистики (мониторинг перемещений)</SelectItem>
+                    <SelectItem value="customer_operator">Оператор заказчика</SelectItem>
+                    <SelectItem value="factory_operator">Оператор производства</SelectItem>
+                    <SelectItem value="warehouse_keeper">Оператор логистики</SelectItem>
                     <SelectItem value="site_master">Оператор стройки</SelectItem>
-                    <SelectItem value="auditor">Аудитор</SelectItem>
                     <SelectItem value="administrator">Администратор</SelectItem>
                   </SelectContent>
                 </Select>
