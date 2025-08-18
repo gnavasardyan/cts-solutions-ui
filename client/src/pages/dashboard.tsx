@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { SideNavigation } from "@/components/layout/SideNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,10 +23,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="flex">
-        <SideNavigation />
-        
-        <main className="flex-1 p-6">
+      <div className="w-full">
           {/* Dashboard Header */}
           <div className="mb-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
@@ -277,7 +273,6 @@ export default function Dashboard() {
               </Card>
             </div>
           </div>
-        </main>
       </div>
 
       <ScannerModal open={scannerOpen} onOpenChange={setScannerOpen} />

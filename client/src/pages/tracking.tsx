@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { SideNavigation } from "@/components/layout/SideNavigation";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,10 +17,7 @@ export default function Tracking() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="flex">
-        <SideNavigation />
-        
-        <main className="flex-1 p-6">
+      <div className="w-full p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Отслеживание элементов</h2>
             <p className="text-industrial-gray">
@@ -160,7 +157,6 @@ export default function Tracking() {
               </div>
             </CardContent>
           </Card>
-        </main>
       </div>
     </div>
   );

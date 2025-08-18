@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { SideNavigation } from "@/components/layout/SideNavigation";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,10 +61,7 @@ export default function Scanning() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="flex">
-        <SideNavigation />
-        
-        <main className="flex-1 p-6">
+      <div className="w-full p-6">
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Сканирование кодов</h2>
@@ -256,7 +253,6 @@ export default function Scanning() {
               </CardContent>
             </Card>
           </div>
-        </main>
       </div>
 
       <ScannerModal open={scannerOpen} onOpenChange={setScannerOpen} onScanResult={handleScanResult} />

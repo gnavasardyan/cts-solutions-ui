@@ -1,5 +1,5 @@
 
-import { SideNavigation } from "@/components/layout/SideNavigation";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,7 @@ export default function Reports() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="flex">
-        <SideNavigation />
-        
-        <main className="flex-1 p-6">
+      <div className="w-full p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Отчеты</h2>
             <p className="text-industrial-gray">
@@ -252,7 +249,6 @@ export default function Reports() {
               </Card>
             </div>
           </div>
-        </main>
       </div>
     </div>
   );
