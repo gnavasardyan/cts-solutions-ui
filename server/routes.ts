@@ -217,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Product routes for customer operators
+  // Product routes
   app.get('/api/products', authenticateToken, async (req: any, res) => {
     try {
       const { category, search } = req.query;
@@ -229,6 +229,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.post('/api/products', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(400).json({ message: "Failed to create product" });
+    }
+  });
+
+  app.patch('/api/products/:id', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const productData = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(req.params.id, productData);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(400).json({ message: "Failed to update product" });
+    }
+  });
+
+  app.delete('/api/products/:id', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      await storage.deleteProduct(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
     }
   });
 
@@ -245,19 +280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/products', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
-    try {
-      const productData = insertProductSchema.parse(req.body);
-      const product = await storage.createProduct(productData);
-      res.json(product);
-    } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(400).json({ message: "Failed to create product" });
-    }
-  });
-
-  // Cart routes for customer operators
-  app.get('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+  // Cart routes (allow admin and customer access)
+  app.get('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {
       if (!req.user?.id) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -270,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+  app.post('/api/cart', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {
       if (!req.user?.id) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -287,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+  app.patch('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {
       const { quantity } = req.body;
       await storage.updateCartItem(req.params.id, quantity);
@@ -298,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR]), async (req: any, res) => {
+  app.delete('/api/cart/:id', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {
       await storage.removeFromCart(req.params.id);
       res.json({ success: true });

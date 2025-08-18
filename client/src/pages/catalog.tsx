@@ -5,10 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Package, Search, Filter } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ShoppingCart, Package, Search, Filter, Plus, Edit, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Product } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const CATEGORIES = {
   all: "Все категории",
@@ -22,8 +26,26 @@ const CATEGORIES = {
 export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  const isAdmin = user?.role === 'administrator';
+
+  // Product form state
+  const [productForm, setProductForm] = useState({
+    name: "",
+    description: "",
+    category: "beam",
+    price: "",
+    weight: "",
+    dimensions: "",
+    gost: "",
+    specifications: "",
+    inStock: "",
+  });
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
@@ -72,8 +94,123 @@ export default function CatalogPage() {
     },
   });
 
+  // Create product mutation
+  const createProductMutation = useMutation({
+    mutationFn: async (productData: any) => {
+      return apiRequest("POST", "/api/products", {
+        ...productData,
+        price: parseFloat(productData.price),
+        weight: productData.weight ? parseFloat(productData.weight) : null,
+        inStock: parseInt(productData.inStock),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Товар создан",
+        description: "Новый товар успешно добавлен в каталог",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setIsAddDialogOpen(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать товар",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update product mutation
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...productData }: any) => {
+      return apiRequest("PATCH", `/api/products/${id}`, {
+        ...productData,
+        price: parseFloat(productData.price),
+        weight: productData.weight ? parseFloat(productData.weight) : null,
+        inStock: parseInt(productData.inStock),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Товар обновлен",
+        description: "Информация о товаре успешно обновлена",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setEditingProduct(null);
+      resetForm();
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить товар",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      return apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Товар удален",
+        description: "Товар успешно удален из каталога",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить товар",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddToCart = (productId: string) => {
     addToCartMutation.mutate({ productId, quantity: 1 });
+  };
+
+  const resetForm = () => {
+    setProductForm({
+      name: "",
+      description: "",
+      category: "beam",
+      price: "",
+      weight: "",
+      dimensions: "",
+      gost: "",
+      specifications: "",
+      inStock: "",
+    });
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setProductForm({
+      name: product.name,
+      description: product.description || "",
+      category: product.category,
+      price: product.price.toString(),
+      weight: product.weight?.toString() ?? "",
+      dimensions: product.dimensions ?? "",
+      gost: product.gost,
+      specifications: product.specifications ?? "",
+      inStock: product.inStock.toString(),
+    });
+    setEditingProduct(product);
+  };
+
+  const handleSubmitProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingProduct) {
+      updateProductMutation.mutate({ id: editingProduct.id, ...productForm });
+    } else {
+      createProductMutation.mutate(productForm);
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -123,15 +260,154 @@ export default function CatalogPage() {
             Металлоконструкции и строительные материалы
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2"
-          onClick={() => window.location.href = '/cart'}
-          data-testid="button-cart"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          Корзина {cartItemCount > 0 && `(${cartItemCount})`}
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2" data-testid="button-add-product">
+                  <Plus className="h-4 w-4" />
+                  Добавить товар
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Добавить новый товар</DialogTitle>
+                  <DialogDescription>
+                    Заполните информацию о товаре для добавления в каталог
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmitProduct} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Название товара *</Label>
+                      <Input
+                        id="name"
+                        value={productForm.name}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                        data-testid="input-product-name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Категория *</Label>
+                      <Select value={productForm.category} onValueChange={(value) => setProductForm(prev => ({ ...prev, category: value }))}>
+                        <SelectTrigger data-testid="select-product-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="beam">Балки и профили</SelectItem>
+                          <SelectItem value="column">Колонны</SelectItem>
+                          <SelectItem value="truss">Фермы и связи</SelectItem>
+                          <SelectItem value="connection">Соединения и крепеж</SelectItem>
+                          <SelectItem value="slab">Плиты перекрытий</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Описание</Label>
+                    <Textarea
+                      id="description"
+                      value={productForm.description}
+                      onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                      data-testid="input-product-description"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="price">Цена (руб.) *</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
+                        required
+                        data-testid="input-product-price"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="weight">Вес (кг)</Label>
+                      <Input
+                        id="weight"
+                        type="number"
+                        value={productForm.weight}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, weight: e.target.value }))}
+                        data-testid="input-product-weight"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="inStock">В наличии (шт.) *</Label>
+                      <Input
+                        id="inStock"
+                        type="number"
+                        value={productForm.inStock}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, inStock: e.target.value }))}
+                        required
+                        data-testid="input-product-stock"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="gost">ГОСТ *</Label>
+                      <Input
+                        id="gost"
+                        value={productForm.gost}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, gost: e.target.value }))}
+                        required
+                        placeholder="например: ГОСТ 26020-83"
+                        data-testid="input-product-gost"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dimensions">Размеры</Label>
+                      <Input
+                        id="dimensions"
+                        value={productForm.dimensions}
+                        onChange={(e) => setProductForm(prev => ({ ...prev, dimensions: e.target.value }))}
+                        placeholder='{"length": 6000, "width": 200, "height": 400}'
+                        data-testid="input-product-dimensions"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="specifications">Технические характеристики</Label>
+                    <Textarea
+                      id="specifications"
+                      value={productForm.specifications}
+                      onChange={(e) => setProductForm(prev => ({ ...prev, specifications: e.target.value }))}
+                      placeholder="Марка стали, класс прочности, дополнительные параметры..."
+                      data-testid="input-product-specifications"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                      Отмена
+                    </Button>
+                    <Button type="submit" disabled={createProductMutation.isPending}>
+                      {createProductMutation.isPending ? "Создание..." : "Создать товар"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => window.location.href = '/cart'}
+            data-testid="button-cart"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            Корзина {cartItemCount > 0 && `(${cartItemCount})`}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -246,14 +522,38 @@ export default function CatalogPage() {
                       В наличии: {product.inStock} шт.
                     </span>
                   </div>
-                  <Button
-                    onClick={() => handleAddToCart(product.id)}
-                    disabled={addToCartMutation.isPending || product.inStock === 0}
-                    size="sm"
-                    data-testid={`button-add-cart-${product.id}`}
-                  >
-                    {addToCartMutation.isPending ? "..." : "В корзину"}
-                  </Button>
+                  <div className="flex gap-2">
+                    {isAdmin && (
+                      <>
+                        <Button
+                          onClick={() => handleEditProduct(product)}
+                          size="sm"
+                          variant="outline"
+                          data-testid={`button-edit-${product.id}`}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          onClick={() => deleteProductMutation.mutate(product.id)}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700"
+                          disabled={deleteProductMutation.isPending}
+                          data-testid={`button-delete-${product.id}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      onClick={() => handleAddToCart(product.id)}
+                      disabled={addToCartMutation.isPending || product.inStock === 0}
+                      size="sm"
+                      data-testid={`button-add-cart-${product.id}`}
+                    >
+                      {addToCartMutation.isPending ? "..." : "В корзину"}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -273,6 +573,135 @@ export default function CatalogPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Edit Product Dialog */}
+      {editingProduct && (
+        <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Редактировать товар</DialogTitle>
+              <DialogDescription>
+                Измените информацию о товаре "{editingProduct.name}"
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmitProduct} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-name">Название товара *</Label>
+                  <Input
+                    id="edit-name"
+                    value={productForm.name}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                    data-testid="input-edit-product-name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-category">Категория *</Label>
+                  <Select value={productForm.category} onValueChange={(value) => setProductForm(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger data-testid="select-edit-product-category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beam">Балки и профили</SelectItem>
+                      <SelectItem value="column">Колонны</SelectItem>
+                      <SelectItem value="truss">Фермы и связи</SelectItem>
+                      <SelectItem value="connection">Соединения и крепеж</SelectItem>
+                      <SelectItem value="slab">Плиты перекрытий</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-description">Описание</Label>
+                <Textarea
+                  id="edit-description"
+                  value={productForm.description}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                  data-testid="input-edit-product-description"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="edit-price">Цена (руб.) *</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
+                    required
+                    data-testid="input-edit-product-price"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-weight">Вес (кг)</Label>
+                  <Input
+                    id="edit-weight"
+                    type="number"
+                    value={productForm.weight}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, weight: e.target.value }))}
+                    data-testid="input-edit-product-weight"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-inStock">В наличии (шт.) *</Label>
+                  <Input
+                    id="edit-inStock"
+                    type="number"
+                    value={productForm.inStock}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, inStock: e.target.value }))}
+                    required
+                    data-testid="input-edit-product-stock"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-gost">ГОСТ *</Label>
+                  <Input
+                    id="edit-gost"
+                    value={productForm.gost}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, gost: e.target.value }))}
+                    required
+                    data-testid="input-edit-product-gost"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-dimensions">Размеры</Label>
+                  <Input
+                    id="edit-dimensions"
+                    value={productForm.dimensions}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, dimensions: e.target.value }))}
+                    data-testid="input-edit-product-dimensions"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-specifications">Технические характеристики</Label>
+                <Textarea
+                  id="edit-specifications"
+                  value={productForm.specifications}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, specifications: e.target.value }))}
+                  data-testid="input-edit-product-specifications"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setEditingProduct(null)}>
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={updateProductMutation.isPending}>
+                  {updateProductMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

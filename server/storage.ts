@@ -268,6 +268,28 @@ export class DatabaseStorage implements IStorage {
     return newProduct;
   }
 
+  async updateProduct(id: string, updates: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [updated] = await db
+      .update(products)
+      .set({
+        ...updates,
+        updatedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    await db
+      .update(products)
+      .set({
+        isActive: 'false',
+        updatedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(products.id, id));
+  }
+
   // Cart operations
   async getCartItems(userId: string): Promise<(CartItem & { product: Product })[]> {
     return await db
