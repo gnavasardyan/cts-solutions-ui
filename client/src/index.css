@@ -211,4 +211,52 @@
   .min-h-touch {
     min-height: 48px;
   }
+
+  /* Layout utilities for sidebar navigation */
+  .sidebar-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .sidebar-layout .sidebar {
+    flex-shrink: 0;
+    width: 16rem; /* 256px */
+  }
+
+  .sidebar-layout .main-content {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+  }
+
+  /* Ensure content doesn't overflow horizontally */
+  .content-wrapper {
+    max-width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+  }
+
+  /* Tables and wide content responsive handling */
+  .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    width: 100%;
+  }
+
+  /* Prevent horizontal overflow in flex containers */
+  .flex-container {
+    min-width: 0;
+  }
+
+  .flex-container > * {
+    min-width: 0;
+  }
 }

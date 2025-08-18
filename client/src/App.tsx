@@ -44,23 +44,25 @@ function Router() {
           {/* <Route component={NotFound} /> */}
         </Switch>
       ) : (
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-hidden">
           {/* Sidebar for all authenticated users */}
           <Sidebar />
-          <main className="flex-1 overflow-auto">
-            <div className="p-6">
-              <Switch>
-                <Route path="/" component={Dashboard} />
-                <Route path="/marking" component={Marking} />
-                <Route path="/scanning" component={Scanning} />
-                <Route path="/tracking" component={Tracking} />
-                <Route path="/reports" component={Reports} />
-                <Route path="/settings" component={Settings} />
-                <Route path="/catalog" component={Catalog} />
-                <Route path="/cart" component={Cart} />
-                <Route path="/orders" component={Orders} />
-                {/* <Route component={NotFound} /> */}
-              </Switch>
+          <main className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 overflow-auto p-6">
+              <div className="max-w-full">
+                <Switch>
+                  <Route path="/" component={Dashboard} />
+                  <Route path="/marking" component={Marking} />
+                  <Route path="/scanning" component={Scanning} />
+                  <Route path="/tracking" component={Tracking} />
+                  <Route path="/reports" component={Reports} />
+                  <Route path="/settings" component={Settings} />
+                  <Route path="/catalog" component={Catalog} />
+                  <Route path="/cart" component={Cart} />
+                  <Route path="/orders" component={Orders} />
+                  {/* <Route component={NotFound} /> */}
+                </Switch>
+              </div>
             </div>
           </main>
         </div>
