@@ -1,0 +1,113 @@
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Link, useLocation } from "wouter";
+import { 
+  LayoutDashboard, 
+  Package, 
+  ShoppingCart, 
+  FileText, 
+  Tag, 
+  Scan, 
+  MapPin, 
+  BarChart3, 
+  Settings,
+  LogOut
+} from "lucide-react";
+import logoPath from "@assets/CTS-white-1_1753870337487.png";
+
+export function Sidebar() {
+  const { user, logout } = useAuth();
+  const [location] = useLocation();
+
+  const navItems = [
+    { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master", "auditor"] },
+    { path: "/catalog", label: "Каталог", icon: Package, roles: ["administrator", "customer_operator"] },
+    { path: "/cart", label: "Корзина", icon: ShoppingCart, roles: ["administrator", "customer_operator"] },
+    { path: "/orders", label: "Заказы", icon: FileText, roles: ["administrator", "customer_operator"] },
+    { path: "/marking", label: "Маркировка", icon: Tag, roles: ["administrator", "factory_operator"] },
+    { path: "/scanning", label: "Сканирование", icon: Scan, roles: ["administrator", "warehouse_keeper", "site_master"] },
+    { path: "/tracking", label: "Отслеживание", icon: MapPin, roles: ["administrator", "warehouse_keeper", "site_master"] },
+    { path: "/reports", label: "Отчеты", icon: BarChart3, roles: ["administrator", "auditor"] },
+    { path: "/settings", label: "Настройки", icon: Settings, roles: ["administrator"] },
+  ];
+
+  const availableItems = navItems.filter(item => 
+    user?.role && item.roles.includes(user.role)
+  );
+
+  return (
+    <div className="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      {/* Logo */}
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <img 
+          src={logoPath} 
+          alt="CTS Logo" 
+          className="h-12 w-auto mx-auto"
+        />
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 text-center mt-2">
+          CTS System
+        </h2>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2">
+        {availableItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location === item.path;
+          
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* User Info & Controls */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+        {/* Theme Toggle */}
+        <div className="flex justify-center">
+          <ThemeToggle />
+        </div>
+
+        {/* User Info */}
+        <div className="text-center">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user?.email || "Пользователь"}
+          </div>
+          <div className="text-xs bg-blue-600 text-white px-2 py-1 rounded mt-1 inline-block">
+            {user?.role === 'administrator' ? 'Администратор' :
+             user?.role === 'customer_operator' ? 'Клиент' :
+             user?.role === 'factory_operator' ? 'Оператор завода' :
+             user?.role === 'warehouse_keeper' ? 'Кладовщик' :
+             user?.role === 'site_master' ? 'Мастер участка' :
+             'Аудитор'}
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={logout}
+          className="w-full flex items-center justify-center space-x-2"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Выйти</span>
+        </Button>
+      </div>
+    </div>
+  );
+}

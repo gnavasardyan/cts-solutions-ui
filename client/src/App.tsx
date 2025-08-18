@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { TopNavigation } from "@/components/layout/TopNavigation";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
@@ -20,7 +21,7 @@ import Cart from "@/pages/cart";
 import Orders from "@/pages/orders";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   // Show loading while checking auth
   if (isLoading) {
@@ -33,33 +34,59 @@ function Router() {
     );
   }
 
+  const isAdmin = user?.role === 'administrator';
+
   return (
     <div className="min-h-screen bg-surface relative">
-      {isAuthenticated && <TopNavigation />}
-      
-      <Switch>
-        {!isAuthenticated ? (
-          <>
-            <Route path="/login" component={Login} />
-            <Route path="/register" component={Register} />
-            <Route path="/" component={Login} />
-            {/* <Route component={NotFound} /> */}
-          </>
-        ) : (
-          <>
-            <Route path="/" component={Dashboard} />
-            <Route path="/marking" component={Marking} />
-            <Route path="/scanning" component={Scanning} />
-            <Route path="/tracking" component={Tracking} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/catalog" component={Catalog} />
-            <Route path="/cart" component={Cart} />
-            <Route path="/orders" component={Orders} />
-            {/* <Route component={NotFound} /> */}
-          </>
-        )}
-      </Switch>
+      {!isAuthenticated ? (
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route path="/" component={Login} />
+          {/* <Route component={NotFound} /> */}
+        </Switch>
+      ) : (
+        <div className="flex h-screen">
+          {/* Sidebar for admin, top navigation for others */}
+          {isAdmin ? (
+            <>
+              <Sidebar />
+              <main className="flex-1 overflow-auto">
+                <div className="p-6">
+                  <Switch>
+                    <Route path="/" component={Dashboard} />
+                    <Route path="/marking" component={Marking} />
+                    <Route path="/scanning" component={Scanning} />
+                    <Route path="/tracking" component={Tracking} />
+                    <Route path="/reports" component={Reports} />
+                    <Route path="/settings" component={Settings} />
+                    <Route path="/catalog" component={Catalog} />
+                    <Route path="/cart" component={Cart} />
+                    <Route path="/orders" component={Orders} />
+                    {/* <Route component={NotFound} /> */}
+                  </Switch>
+                </div>
+              </main>
+            </>
+          ) : (
+            <>
+              <TopNavigation />
+              <Switch>
+                <Route path="/" component={Dashboard} />
+                <Route path="/marking" component={Marking} />
+                <Route path="/scanning" component={Scanning} />
+                <Route path="/tracking" component={Tracking} />
+                <Route path="/reports" component={Reports} />
+                <Route path="/settings" component={Settings} />
+                <Route path="/catalog" component={Catalog} />
+                <Route path="/cart" component={Cart} />
+                <Route path="/orders" component={Orders} />
+                {/* <Route component={NotFound} /> */}
+              </Switch>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
