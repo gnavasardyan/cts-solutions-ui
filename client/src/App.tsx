@@ -44,12 +44,13 @@ function Router() {
           {/* <Route component={NotFound} /> */}
         </Switch>
       ) : (
-        <div className="flex h-screen overflow-hidden">
-          {/* Sidebar for all authenticated users */}
-          <Sidebar />
-          <main className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 overflow-auto p-6">
-              <div className="max-w-full">
+        <div className="h-screen overflow-hidden">
+          {/* Desktop: side-by-side layout, Mobile: sidebar overlay */}
+          <div className="lg:grid lg:grid-cols-[256px_1fr] h-full">
+            {/* Sidebar for all authenticated users */}
+            <Sidebar />
+            <main className="overflow-auto w-full lg:ml-0">
+              <div className="p-4 sm:p-6 w-full mobile-padding lg:p-6">
                 <Switch>
                   <Route path="/" component={Dashboard} />
                   <Route path="/marking" component={Marking} />
@@ -63,8 +64,8 @@ function Router() {
                   {/* <Route component={NotFound} /> */}
                 </Switch>
               </div>
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
       )}
     </div>

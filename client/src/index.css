@@ -259,4 +259,43 @@
   .flex-container > * {
     min-width: 0;
   }
+
+  /* Responsive utilities */
+  @media (max-width: 1023px) {
+    .mobile-padding {
+      padding-left: 4rem; /* Space for mobile menu button */
+    }
+    
+    .grid-responsive {
+      grid-template-columns: 1fr !important;
+      gap: 1rem;
+    }
+    
+    .card-responsive {
+      min-width: 280px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .mobile-padding {
+      padding-left: 3rem;
+      padding-right: 1rem;
+    }
+    
+    .text-responsive {
+      font-size: 0.875rem;
+    }
+    
+    .card-responsive {
+      min-width: 260px;
+    }
+  }
+
+  /* Ensure content wraps properly */
+  .overflow-wrap {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
 }

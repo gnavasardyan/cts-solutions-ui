@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Link, useLocation } from "wouter";
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   Package, 
@@ -12,13 +13,16 @@ import {
   MapPin, 
   BarChart3, 
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from "lucide-react";
 import logoPath from "@assets/CTS-white-1_1753870337487.png";
 
 export function Sidebar() {
   const { user, logout } = useAuth();
   const [location] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master"] },
@@ -37,8 +41,36 @@ export function Sidebar() {
   );
 
   return (
-    <div className="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col flex-shrink-0">
-      {/* Logo */}
+    <>
+      {/* Mobile menu button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="bg-white dark:bg-gray-900 shadow-lg"
+        >
+          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </Button>
+      </div>
+
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 
+        flex flex-col flex-shrink-0 z-50
+        lg:relative lg:translate-x-0
+        fixed left-0 top-0 transform transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Logo */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <img 
           src={logoPath} 
@@ -60,6 +92,7 @@ export function Sidebar() {
             <Link
               key={item.path}
               href={item.path}
+              onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
@@ -107,7 +140,8 @@ export function Sidebar() {
           <LogOut className="w-4 h-4" />
           <span>Выйти</span>
         </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
