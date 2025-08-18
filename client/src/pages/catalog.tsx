@@ -40,10 +40,21 @@ export default function CatalogPage() {
   // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
-      return apiRequest('/api/cart', {
+      const response = await fetch('/api/cart', {
         method: 'POST',
-        body: { productId, quantity },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify({ productId, quantity }),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add to cart');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
