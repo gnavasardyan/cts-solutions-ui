@@ -30,7 +30,7 @@ export const users = sqliteTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
-  role: text("role").notNull().default("customer_operator"), // administrator, customer_operator, production_operator, logistics_operator, construction_operator
+  role: text("role").notNull().default("customer_operator"), // administrator, customer_operator, factory_operator, warehouse_keeper, site_master, auditor
   isActive: text("is_active").notNull().default("true"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),

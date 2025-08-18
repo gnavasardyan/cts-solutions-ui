@@ -61,7 +61,7 @@ export class AuthService {
     const user = await storage.createUser({
       ...userData,
       password: hashedPassword,
-      role: userData.role || 'auditor',
+      role: userData.role || 'customer_operator',
       isActive: 'true',
     });
 

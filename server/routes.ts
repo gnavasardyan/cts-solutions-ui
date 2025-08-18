@@ -39,6 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const credentials = loginSchema.parse(req.body);
       
       const result = await AuthService.authenticate(credentials.email, credentials.password);
+      
       if (!result) {
         return res.status(401).json({ message: 'Неверный email или пароль' });
       }

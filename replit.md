@@ -74,6 +74,16 @@ Preferred communication style: Simple, everyday language.
   - API для продуктов, корзины и заказов полностью функционален
   - Система авторизации JWT работает корректно
 
+### Диагностика системы аутентификации (январь 18, 2025)
+- **Выявленная проблема**: Функция регистрации работает корректно, но новые пользователи не могут авторизоваться
+- **Ролевая модель обновлена**: administrator, customer_operator, factory_operator, warehouse_keeper, site_master, auditor
+- **Статус**: Частично функциональная система - работают только изначальные пользователи (customer@example.com, admin@example.com)
+- **Технические детали**: 
+  - Пользователи успешно создаются в базе данных
+  - Storage находит пользователей при создании, но не при аутентификации
+  - Возможная проблема с кешированием или разными экземплярами БД
+- **Требует решения**: Полная синхронизация всех ролей для производственной системы
+
 ### January 31, 2025
 - **Dark Theme Implementation**: Added complete dark/light theme support
   - Created ThemeProvider with localStorage persistence
