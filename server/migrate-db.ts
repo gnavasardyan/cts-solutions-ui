@@ -6,7 +6,7 @@ async function runMigrations() {
   console.log('Running database migrations...');
   
   // Create the database file if it doesn't exist
-  const sqlite = new Database('./database.sqlite');
+  const sqlite = new Database('database.sqlite');
   
   // Create tables manually since we can't use drizzle-kit
   const createTableQueries = [

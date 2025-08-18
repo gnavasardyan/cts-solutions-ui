@@ -1,15 +1,19 @@
+import { runMigrations } from './migrate-db';
 import { db } from './db';
-import { users, products, controlPoints, elements, orders, orderItems, cartItems } from '@shared/schema';
+import { users, products, controlPoints } from '@shared/schema';
 import bcrypt from 'bcryptjs';
 
 async function initializeDatabase() {
   console.log('Initializing database with updated schema...');
 
   try {
+    // First run migrations to create tables
+    await runMigrations();
+    
     // Check if database already has data
     const existingUsers = await db.select().from(users).limit(1);
     if (existingUsers.length > 0) {
-      console.log('Database already initialized, skipping...');
+      console.log('Database already initialized, skipping data creation...');
       return;
     }
 
@@ -74,175 +78,95 @@ async function initializeDatabase() {
         longitude: 37.628423,
       },
       {
-        name: 'Стройплощадка "Москва-Сити"',
+        name: 'Строительная площадка А',
         type: 'usage_site',
-        address: 'г. Москва, Пресненская наб.',
-        latitude: 55.749244,
-        longitude: 37.538423,
+        address: 'г. Москва, ул. Строительная, 25',
+        latitude: 55.761244,
+        longitude: 37.638423,
       },
     ]);
 
-    // Create sample products for catalog
+    // Create test products for catalog
     await db.insert(products).values([
       {
         name: 'Двутавровая балка 20Б1',
-        description: 'Стальная двутавровая балка для несущих конструкций',
+        description: 'Стальная двутавровая балка для строительных конструкций',
         category: 'beam',
         price: 15000,
-        weight: 150.5,
-        dimensions: JSON.stringify({ length: 6000, width: 200, height: 200 }),
+        weight: 120.5,
+        dimensions: '{"length": 6000, "height": 200, "width": 100, "thickness": 8}',
         gost: 'ГОСТ 8239-89',
         inStock: 50,
       },
       {
-        name: 'Колонна К-300',
-        description: 'Стальная колонна круглого сечения',
+        name: 'Колонна К-1',
+        description: 'Сварная колонна из двутавра для каркаса здания',
         category: 'column',
         price: 25000,
-        weight: 280.0,
-        dimensions: JSON.stringify({ length: 3000, diameter: 300 }),
-        gost: 'ГОСТ 8732-78',
+        weight: 200.0,
+        dimensions: '{"length": 3000, "width": 150, "height": 150}',
+        gost: 'ГОСТ 23118-2012',
         inStock: 30,
       },
       {
-        name: 'Ферма треугольная Ф-12',
-        description: 'Стальная ферма для кровельных конструкций',
+        name: 'Ферма покрытия Ф-1',
+        description: 'Стропильная ферма для покрытия производственного здания',
         category: 'truss',
         price: 45000,
-        weight: 420.0,
-        dimensions: JSON.stringify({ length: 12000, height: 2000 }),
-        gost: 'ГОСТ 23279-85',
+        weight: 350.0,
+        dimensions: '{"length": 12000, "height": 1500, "width": 300}',
+        gost: 'ГОСТ 23118-2012',
         inStock: 15,
       },
       {
-        name: 'Соединительный узел УС-1',
-        description: 'Болтовое соединение для металлоконструкций',
+        name: 'Болтовое соединение М20',
+        description: 'Комплект болтового соединения высокопрочный',
         category: 'connection',
-        price: 3500,
-        weight: 12.5,
-        dimensions: JSON.stringify({ width: 150, height: 150, thickness: 20 }),
-        gost: 'ГОСТ 7805-70',
+        price: 500,
+        weight: 0.8,
+        dimensions: '{"diameter": 20, "length": 80}',
+        gost: 'ГОСТ 22353-77',
         inStock: 200,
       },
       {
-        name: 'Двутавровая балка 30Б1',
-        description: 'Усиленная стальная балка для тяжелых нагрузок',
-        category: 'beam',
-        price: 22000,
-        weight: 220.0,
-        dimensions: JSON.stringify({ length: 6000, width: 300, height: 300 }),
-        gost: 'ГОСТ 8239-89',
+        name: 'Плита перекрытия ПК 63-15',
+        description: 'Железобетонная предварительно напряженная плита',
+        category: 'slab',
+        price: 18000,
+        weight: 2800.0,
+        dimensions: '{"length": 6300, "width": 1500, "height": 220}',
+        gost: 'ГОСТ 9561-2016',
         inStock: 25,
       },
       {
-        name: 'Колонна К-400',
-        description: 'Стальная колонна большого сечения',
-        category: 'column',
-        price: 35000,
-        weight: 380.0,
-        dimensions: JSON.stringify({ length: 4000, diameter: 400 }),
-        gost: 'ГОСТ 8732-78',
-        inStock: 20,
-      },
-      {
-        name: 'Прогон ПР-250',
-        description: 'Металлический прогон для кровли',
+        name: 'Двутавровая балка 30Б1',
+        description: 'Стальная двутавровая балка повышенной несущей способности',
         category: 'beam',
-        price: 8500,
-        weight: 85.0,
-        dimensions: JSON.stringify({ length: 6000, width: 250, height: 120 }),
+        price: 28000,
+        weight: 180.5,
+        dimensions: '{"length": 6000, "height": 300, "width": 135, "thickness": 10}',
         gost: 'ГОСТ 8239-89',
-        inStock: 50,
-      },
-      {
-        name: 'Анкерный болт М20х300',
-        description: 'Анкерное крепление для фундамента',
-        category: 'connection',
-        price: 450,
-        weight: 1.2,
-        dimensions: JSON.stringify({ diameter: 20, length: 300 }),
-        gost: 'ГОСТ 24379-80',
-        inStock: 1000,
-      },
-      {
-        name: 'Ферма ФТ-18',
-        description: 'Треугольная ферма пролетом 18 метров',
-        category: 'truss',
-        price: 65000,
-        weight: 580.0,
-        dimensions: JSON.stringify({ length: 18000, height: 2800 }),
-        gost: 'ГОСТ 23279-85',
-        inStock: 8,
-      },
-      {
-        name: 'Швеллер 20У',
-        description: 'Стальной швеллер с уклоном полок',
-        category: 'beam',
-        price: 12000,
-        weight: 95.0,
-        dimensions: JSON.stringify({ length: 6000, width: 200, height: 76 }),
-        gost: 'ГОСТ 8240-97',
         inStock: 35,
       },
       {
-        name: 'Уголок равнополочный 100х100х8',
-        description: 'Равнополочный стальной уголок',
-        category: 'beam',
-        price: 3200,
-        weight: 47.1,
-        dimensions: JSON.stringify({ length: 6000, width: 100, height: 100, thickness: 8 }),
-        gost: 'ГОСТ 8509-93',
-        inStock: 80,
-      },
-      {
-        name: 'Плита перекрытия ПК-60.15',
-        description: 'Железобетонная плита перекрытия',
-        category: 'slab',
-        price: 28000,
-        weight: 2800.0,
-        dimensions: JSON.stringify({ length: 6000, width: 1500, height: 220 }),
-        gost: 'ГОСТ 9561-91',
-        inStock: 12,
-      },
-    ]);
-
-    // Create sample elements for tracking
-    await db.insert(elements).values([
-      {
-        code: 'B001-2024-001',
-        type: 'beam',
-        status: 'production',
-        drawing: 'DWG-B001',
-        batch: 'BATCH-2024-01',
-        gost: 'ГОСТ 8239-89',
-        length: 6000,
-        width: 200,
-        height: 200,
-        weight: 150.5,
-      },
-      {
-        code: 'C001-2024-001',
-        type: 'column',
-        status: 'ready_to_ship',
-        drawing: 'DWG-C001',
-        batch: 'BATCH-2024-01',
-        gost: 'ГОСТ 8732-78',
-        length: 3000,
-        width: 300,
-        height: 300,
+        name: 'Колонна К-2',
+        description: 'Составная сварная колонна для многоэтажного здания',
+        category: 'column',
+        price: 35000,
         weight: 280.0,
+        dimensions: '{"length": 4500, "width": 200, "height": 200}',
+        gost: 'ГОСТ 23118-2012',
+        inStock: 20,
       },
       {
-        code: 'T001-2024-001',
-        type: 'truss',
-        status: 'in_storage',
-        drawing: 'DWG-T001',
-        batch: 'BATCH-2024-02',
-        gost: 'ГОСТ 23279-85',
-        length: 12000,
-        width: 2000,
-        height: 1500,
-        weight: 420.0,
+        name: 'Ферма покрытия Ф-2',
+        description: 'Легкая стропильная ферма для складских помещений',
+        category: 'truss',
+        price: 32000,
+        weight: 220.0,
+        dimensions: '{"length": 9000, "height": 1200, "width": 250}',
+        gost: 'ГОСТ 23118-2012',
+        inStock: 18,
       },
     ]);
 
