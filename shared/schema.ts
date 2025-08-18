@@ -256,7 +256,7 @@ export const registerSchema = z.object({
   password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
   firstName: z.string().min(1, "Имя обязательно"),
   lastName: z.string().min(1, "Фамилия обязательна"),
-  role: z.enum(["administrator", "customer_operator", "production_operator", "logistics_operator", "construction_operator"]).default("customer_operator"),
+  role: z.enum(["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master", "auditor"]).default("customer_operator"),
 });
 
 // New schemas for products and orders
@@ -309,7 +309,8 @@ export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 export const UserRoles = {
   ADMINISTRATOR: "administrator",
   CUSTOMER_OPERATOR: "customer_operator", 
-  PRODUCTION_OPERATOR: "production_operator",
-  LOGISTICS_OPERATOR: "logistics_operator", 
-  CONSTRUCTION_OPERATOR: "construction_operator"
+  FACTORY_OPERATOR: "factory_operator",
+  WAREHOUSE_KEEPER: "warehouse_keeper", 
+  SITE_MASTER: "site_master",
+  AUDITOR: "auditor"
 } as const;

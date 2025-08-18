@@ -18,7 +18,7 @@ export default function Register() {
     confirmPassword: "",
     firstName: "",
     lastName: "",
-    role: "auditor",
+    role: "customer_operator",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,10 +134,11 @@ export default function Register() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auditor">Аудитор</SelectItem>
+                    <SelectItem value="customer_operator">Клиент-оператор</SelectItem>
                     <SelectItem value="factory_operator">Оператор завода</SelectItem>
                     <SelectItem value="warehouse_keeper">Кладовщик</SelectItem>
                     <SelectItem value="site_master">Мастер участка</SelectItem>
+                    <SelectItem value="auditor">Аудитор</SelectItem>
                     <SelectItem value="administrator">Администратор</SelectItem>
                   </SelectContent>
                 </Select>

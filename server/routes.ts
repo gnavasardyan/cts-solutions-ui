@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Element routes
-  app.post('/api/elements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR]), async (req: any, res) => {
+  app.post('/api/elements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR]), async (req: any, res) => {
     try {
       const elementData = insertElementSchema.parse(req.body);
       const element = await storage.createElement(elementData);
@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/elements/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR, UserRoles.LOGISTICS_OPERATOR, UserRoles.CONSTRUCTION_OPERATOR]), async (req: any, res) => {
+  app.patch('/api/elements/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR, UserRoles.WAREHOUSE_KEEPER, UserRoles.SITE_MASTER]), async (req: any, res) => {
     try {
       const { status, locationId } = req.body;
       await storage.updateElementStatus(req.params.id, status, locationId);
@@ -153,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Movement routes
-  app.post('/api/movements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR, UserRoles.LOGISTICS_OPERATOR, UserRoles.CONSTRUCTION_OPERATOR]), async (req: any, res) => {
+  app.post('/api/movements', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR, UserRoles.WAREHOUSE_KEEPER, UserRoles.SITE_MASTER]), async (req: any, res) => {
     try {
       const movementData = insertMovementSchema.parse({
         ...req.body,
