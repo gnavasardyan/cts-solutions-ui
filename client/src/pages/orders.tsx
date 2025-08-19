@@ -64,13 +64,7 @@ export default function OrdersPage() {
 
   const sendToFactoryMutation = useMutation({
     mutationFn: async (data: { orderId: string; formData: SendToFactoryData }) => {
-      const response = await fetch(`/api/orders/${data.orderId}/send-to-factory`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.formData)
-      });
-      if (!response.ok) throw new Error('Failed to send order');
-      return response.json();
+      return await apiRequest("POST", `/api/orders/${data.orderId}/send-to-factory`, data.formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
