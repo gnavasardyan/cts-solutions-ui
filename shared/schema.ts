@@ -312,7 +312,7 @@ export const insertCartItemSchema = createInsertSchema(cartItems).omit({
   updatedAt: true,
 });
 
-// Factory insert schema
+// Factory insert schema  
 export const insertFactorySchema = createInsertSchema(factories).omit({
   id: true,
   createdAt: true,

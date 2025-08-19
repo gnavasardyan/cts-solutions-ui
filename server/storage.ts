@@ -475,7 +475,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createFactory(factory: InsertFactory): Promise<Factory> {
-    const [newFactory] = await db.insert(factories).values(factory).returning();
+    const newFactoryData = {
+      ...factory,
+      id: crypto.randomUUID().replace(/-/g, '').toUpperCase(),
+      isActive: "true",
+      specializations: Array.isArray(factory.specializations) 
+        ? JSON.stringify(factory.specializations)
+        : factory.specializations,
+      createdAt: Math.floor(Date.now() / 1000),
+      updatedAt: Math.floor(Date.now() / 1000)
+    };
+    const [newFactory] = await db.insert(factories).values(newFactoryData).returning();
     return newFactory;
   }
 

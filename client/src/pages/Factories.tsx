@@ -49,14 +49,21 @@ export default function Factories() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: FactoryFormData) => 
-      apiRequest("/api/factories", {
+    mutationFn: async (data: FactoryFormData) => {
+      const response = await fetch("/api/factories", {
         method: "POST",
-        body: {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           ...data,
-          specializations: JSON.stringify(data.specializations.split(",").map(s => s.trim()))
-        }
-      }),
+          specializations: data.specializations.split(",").map(s => s.trim()).filter(s => s.length > 0)
+        })
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Ошибка создания завода');
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/factories"] });
       setIsCreateOpen(false);
@@ -71,14 +78,21 @@ export default function Factories() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: FactoryFormData }) => 
-      apiRequest(`/api/factories/${id}`, {
+    mutationFn: async ({ id, data }: { id: string; data: FactoryFormData }) => {
+      const response = await fetch(`/api/factories/${id}`, {
         method: "PATCH",
-        body: {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           ...data,
-          specializations: JSON.stringify(data.specializations.split(",").map(s => s.trim()))
-        }
-      }),
+          specializations: data.specializations.split(",").map(s => s.trim()).filter(s => s.length > 0)
+        })
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Ошибка обновления завода');
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/factories"] });
       setEditingFactory(null);
@@ -93,8 +107,14 @@ export default function Factories() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => 
-      apiRequest(`/api/factories/${id}`, { method: "DELETE" }),
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/factories/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Ошибка удаления завода');
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/factories"] });
       toast({ description: "Завод успешно удален" });
@@ -130,9 +150,14 @@ export default function Factories() {
 
   const handleEdit = (factory: Factory) => {
     setEditingFactory(factory);
-    const specializations = Array.isArray(JSON.parse(factory.specializations)) 
-      ? JSON.parse(factory.specializations).join(", ")
-      : factory.specializations;
+    
+    let specializations = "";
+    try {
+      const parsed = JSON.parse(factory.specializations || "[]");
+      specializations = Array.isArray(parsed) ? parsed.join(", ") : factory.specializations;
+    } catch {
+      specializations = factory.specializations || "";
+    }
     
     form.reset({
       name: factory.name,
@@ -312,12 +337,20 @@ export default function Factories() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {factories.map((factory) => (
-          <Card key={factory.id} data-testid={`card-factory-${factory.id}`}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{factory.name}</CardTitle>
+        {factories.map((factory) => {
+          let specializations = [];
+          try {
+            specializations = JSON.parse(factory.specializations || "[]");
+          } catch {
+            specializations = [factory.specializations];
+          }
+          
+          return (
+            <Card key={factory.id} data-testid={`card-factory-${factory.id}`}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{factory.name}</CardTitle>
                   <CardDescription className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     {factory.location}
@@ -392,7 +425,8 @@ export default function Factories() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {factories.length === 0 && (
