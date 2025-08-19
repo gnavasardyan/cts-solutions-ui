@@ -447,9 +447,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
+    // Generate unique order number
+    const orderNumber = `ORD-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+    
     const [newOrder] = await db
       .insert(orders)
-      .values(order)
+      .values({
+        ...order,
+        orderNumber,
+      })
       .returning();
     return newOrder;
   }

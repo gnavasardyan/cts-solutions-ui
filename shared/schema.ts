@@ -297,6 +297,7 @@ export const insertProductSchema = createInsertSchema(products).omit({
 
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
+  orderNumber: true, // Generated automatically
   createdAt: true,
   updatedAt: true,
 });
