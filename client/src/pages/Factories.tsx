@@ -199,13 +199,16 @@ export default function Factories() {
             Создание и управление производственными заводами
           </p>
         </div>
-        <Dialog open={isCreateOpen || editingFactory !== null} onOpenChange={resetForm}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsCreateOpen(true)} data-testid="button-create-factory">
-              <Plus className="mr-2 h-4 w-4" />
-              Добавить завод
-            </Button>
-          </DialogTrigger>
+        <Button onClick={() => setIsCreateOpen(true)} data-testid="button-create-factory">
+          <Plus className="mr-2 h-4 w-4" />
+          Добавить завод
+        </Button>
+
+        <Dialog open={isCreateOpen || editingFactory !== null} onOpenChange={(open) => {
+          if (!open) {
+            resetForm();
+          }
+        }}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
