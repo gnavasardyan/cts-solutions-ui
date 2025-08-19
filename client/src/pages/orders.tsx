@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory, Edit2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -40,6 +41,13 @@ export default function OrdersPage() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Check if user can edit factory (admin or order owner)
+  const canEditFactory = (order: any) => {
+    if (!user) return false;
+    return user.role === 'administrator' || order.customerId === user.id;
+  };
 
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery({
@@ -145,9 +153,16 @@ export default function OrdersPage() {
           К каталогу
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Мои заказы</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            История заказов и текущий статус
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {user?.role === 'administrator' ? 'Все заказы' : 'Мои заказы'}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2">
+            {user?.role === 'administrator' ? 'Управление всеми заказами системы' : 'История заказов и текущий статус'}
+            {user?.role === 'administrator' && (
+              <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-2 py-1 rounded">
+                Режим администратора
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -252,17 +267,24 @@ export default function OrdersPage() {
                       <h4 className="font-medium mb-2 flex items-center gap-2">
                         <Factory className="h-4 w-4" />
                         Завод
+                        {user?.role === 'administrator' && (
+                          <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-1.5 py-0.5 rounded">
+                            Администратор
+                          </span>
+                        )}
                       </h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(order)}
-                        className="h-8 px-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                        data-testid={`button-edit-factory-${order.id}`}
-                      >
-                        <Edit2 className="h-3 w-3 mr-1" />
-                        Изменить
-                      </Button>
+                      {canEditFactory(order) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditDialog(order)}
+                          className="h-8 px-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                          data-testid={`button-edit-factory-${order.id}`}
+                        >
+                          <Edit2 className="h-3 w-3 mr-1" />
+                          Изменить
+                        </Button>
+                      )}
                     </div>
                     {(() => {
                       const factory = (factories as any[]).find((f: any) => f.id === order.factoryId);
@@ -350,7 +372,7 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Send to Factory Button */}
-                {(order.status === "pending" || order.status === "confirmed") && (
+                {(order.status === "pending" || order.status === "confirmed") && canEditFactory(order) && (
                   <div className="mt-4 pt-4 border-t">
                     <Button
                       onClick={() => openSendDialog(order.id)}
@@ -360,6 +382,16 @@ export default function OrdersPage() {
                       <Send className="h-4 w-4 mr-2" />
                       Отправить на завод
                     </Button>
+                  </div>
+                )}
+
+                {/* Admin info */}
+                {user?.role === 'administrator' && order.customerId !== user.id && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Заказчик: ID {order.customerId.slice(-8).toUpperCase()}
+                    </div>
                   </div>
                 )}
               </CardContent>
