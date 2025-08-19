@@ -401,9 +401,13 @@ export class DatabaseStorage implements IStorage {
     const allOrders = await db
       .select({
         id: orders.id,
+        orderNumber: orders.orderNumber,
         customerId: orders.customerId,
+        factoryId: orders.factoryId,
         status: orders.status,
+        priority: orders.priority,
         totalAmount: orders.totalAmount,
+        deadline: orders.deadline,
         notes: orders.notes,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,
@@ -431,9 +435,13 @@ export class DatabaseStorage implements IStorage {
         
         return {
           id: order.id,
+          orderNumber: order.orderNumber,
           customerId: order.customerId,
+          factoryId: order.factoryId,
           status: order.status,
+          priority: order.priority,
           totalAmount: order.totalAmount,
+          deadline: order.deadline,
           notes: order.notes,
           createdAt: order.createdAt,
           updatedAt: order.updatedAt,

@@ -107,7 +107,7 @@ export default function OrdersPage() {
     setEditingOrderId(order.id);
     setSendingOrderId(null);
     // Pre-fill the form with current factory data
-    const currentFactory = factories.find((f: any) => f.id === order.factoryId);
+    const currentFactory = (factories as any[]).find((f: any) => f.id === order.factoryId);
     form.reset({
       factoryId: order.factoryId || "",
       priority: order.priority || "normal",
