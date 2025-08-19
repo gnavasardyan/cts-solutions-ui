@@ -7,6 +7,7 @@ import {
   orders,
   orderItems,
   cartItems,
+  factories,
   type User,
   type UpsertUser,
   type Element,
@@ -23,6 +24,9 @@ import {
   type InsertOrderItem,
   type CartItem,
   type InsertCartItem,
+  type Factory,
+  type InsertFactory,
+  type UpdateOrder,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql } from "drizzle-orm";
@@ -73,6 +77,15 @@ export interface IStorage {
   // Order operations
   getOrdersByCustomer(customerId: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
   getAllOrders(): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User })[]>;
+  sendOrderToFactory(orderId: string, updateData: UpdateOrder): Promise<Order | undefined>;
+  getFactoryOrders(filters?: { status?: string; priority?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]>;
+
+  // Factory operations
+  getFactories(): Promise<Factory[]>;
+  getFactoryById(id: string): Promise<Factory | undefined>;
+  createFactory(factory: InsertFactory): Promise<Factory>;
+  updateFactory(id: string, updates: Partial<InsertFactory>): Promise<Factory | undefined>;
+  deleteFactory(id: string): Promise<boolean>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: string, status: string): Promise<void>;
 }
@@ -449,6 +462,96 @@ export class DatabaseStorage implements IStorage {
         updatedAt: Math.floor(Date.now() / 1000),
       })
       .where(eq(orders.id, id));
+  }
+
+  // Factory operations
+  async getFactories(): Promise<Factory[]> {
+    return await db.select().from(factories).where(eq(factories.isActive, "true"));
+  }
+
+  async getFactoryById(id: string): Promise<Factory | undefined> {
+    const result = await db.select().from(factories).where(eq(factories.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createFactory(factory: InsertFactory): Promise<Factory> {
+    const [newFactory] = await db.insert(factories).values(factory).returning();
+    return newFactory;
+  }
+
+  async updateFactory(id: string, updates: Partial<InsertFactory>): Promise<Factory | undefined> {
+    const [updatedFactory] = await db.update(factories)
+      .set(updates)
+      .where(eq(factories.id, id))
+      .returning();
+    return updatedFactory;
+  }
+
+  async deleteFactory(id: string): Promise<boolean> {
+    const result = await db.update(factories)
+      .set({ isActive: "false" })
+      .where(eq(factories.id, id));
+    
+    return result.changes > 0;
+  }
+
+  // Enhanced order operations
+  async sendOrderToFactory(orderId: string, updateData: UpdateOrder): Promise<Order | undefined> {
+    const [updatedOrder] = await db.update(orders)
+      .set({
+        ...updateData,
+        updatedAt: Math.floor(Date.now() / 1000)
+      })
+      .where(eq(orders.id, orderId))
+      .returning();
+    return updatedOrder;
+  }
+
+  async getFactoryOrders(filters?: { status?: string; priority?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]> {
+    let whereConditions = [];
+    
+    if (filters?.status) {
+      whereConditions.push(eq(orders.status, filters.status));
+    } else {
+      // Default to orders sent to factory or in production
+      whereConditions.push(sql`${orders.status} IN ('sent_to_factory', 'new', 'in_production')`);
+    }
+    
+    if (filters?.priority) {
+      whereConditions.push(eq(orders.priority, filters.priority));
+    }
+
+    const orderResults = await db.select({
+      order: orders,
+      customer: users,
+      factory: factories
+    }).from(orders)
+      .leftJoin(users, eq(orders.customerId, users.id))
+      .leftJoin(factories, eq(orders.factoryId, factories.id))
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+
+    const ordersWithItems = await Promise.all(
+      orderResults.map(async (result) => {
+        const items = await db.select({
+          orderItem: orderItems,
+          product: products
+        }).from(orderItems)
+          .leftJoin(products, eq(orderItems.productId, products.id))
+          .where(eq(orderItems.orderId, result.order.id));
+
+        return {
+          ...result.order,
+          items: items.map(item => ({
+            ...item.orderItem,
+            product: item.product!
+          })),
+          customer: result.customer!,
+          factory: result.factory || undefined
+        };
+      })
+    );
+
+    return ordersWithItems;
   }
 }
 

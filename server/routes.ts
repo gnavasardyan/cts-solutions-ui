@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertElementSchema, insertMovementSchema, insertControlPointSchema, loginSchema, registerSchema, insertProductSchema, insertOrderSchema, insertCartItemSchema, UserRoles } from "@shared/schema";
+import { insertElementSchema, insertMovementSchema, insertControlPointSchema, loginSchema, registerSchema, insertProductSchema, insertOrderSchema, insertCartItemSchema, insertFactorySchema, updateOrderSchema, UserRoles } from "@shared/schema";
 import { z } from "zod";
 import { AuthService, authenticateToken, requireRole, type AuthRequest } from "./auth";
 
@@ -367,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/orders/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.PRODUCTION_OPERATOR]), async (req: any, res) => {
+  app.patch('/api/orders/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR]), async (req: any, res) => {
     try {
       const { status } = req.body;
       await storage.updateOrderStatus(req.params.id, status);
@@ -375,6 +375,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating order status:", error);
       res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Send order to factory (customer operator)
+  app.post('/api/orders/:id/send-to-factory', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const { factoryId, priority, deadline, notes } = req.body;
+      const orderId = req.params.id;
+      
+      // Generate order number if not exists
+      const orderNumber = `ORD-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+      
+      const updatedOrder = await storage.sendOrderToFactory(orderId, {
+        factoryId,
+        priority: priority || 'normal',
+        deadline,
+        notes,
+        orderNumber,
+        status: 'sent_to_factory'
+      });
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: 'Заказ не найден' });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error sending order to factory:", error);
+      res.status(500).json({ message: "Ошибка отправки заказа на завод" });
+    }
+  });
+
+  // Factory management routes
+  app.get('/api/factories', authenticateToken, async (req: any, res) => {
+    try {
+      const factories = await storage.getFactories();
+      res.json(factories);
+    } catch (error) {
+      console.error('Get factories error:', error);
+      res.status(500).json({ message: 'Ошибка получения списка заводов' });
+    }
+  });
+
+  app.post('/api/factories', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const factoryData = insertFactorySchema.parse(req.body);
+      const factory = await storage.createFactory(factoryData);
+      res.status(201).json(factory);
+    } catch (error) {
+      console.error('Create factory error:', error);
+      res.status(400).json({ 
+        message: error instanceof z.ZodError 
+          ? error.errors[0]?.message || 'Ошибка валидации данных' 
+          : 'Ошибка создания завода'
+      });
+    }
+  });
+
+  app.patch('/api/factories/:id', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const id = req.params.id;
+      const updates = insertFactorySchema.partial().parse(req.body);
+      const factory = await storage.updateFactory(id, updates);
+      
+      if (!factory) {
+        return res.status(404).json({ message: 'Завод не найден' });
+      }
+      
+      res.json(factory);
+    } catch (error) {
+      console.error('Update factory error:', error);
+      res.status(400).json({ 
+        message: error instanceof z.ZodError 
+          ? error.errors[0]?.message || 'Ошибка валидации данных' 
+          : 'Ошибка обновления завода'
+      });
+    }
+  });
+
+  app.delete('/api/factories/:id', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const id = req.params.id;
+      const success = await storage.deleteFactory(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'Завод не найден' });
+      }
+      
+      res.json({ message: 'Завод успешно удален' });
+    } catch (error) {
+      console.error('Delete factory error:', error);
+      res.status(500).json({ message: 'Ошибка удаления завода' });
+    }
+  });
+
+  // Factory orders (for factory operators)
+  app.get('/api/factory/orders', authenticateToken, requireRole([UserRoles.FACTORY_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const { status, priority } = req.query;
+      const filters = { 
+        status: status as string, 
+        priority: priority as string 
+      };
+      
+      const orders = await storage.getFactoryOrders(filters);
+      res.json(orders);
+    } catch (error) {
+      console.error('Get factory orders error:', error);
+      res.status(500).json({ message: 'Ошибка получения заказов завода' });
     }
   });
 

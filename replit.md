@@ -42,9 +42,11 @@ Preferred communication style: Simple, everyday language.
 
 #### Database Schema (SQLite)
 - **Users Table**: Stores user profiles and role assignments with integer timestamps
-- **Elements Table**: Metal construction items with unique codes, specifications, and status tracking
-- **Movements Table**: Historical log of element location changes with Unix timestamps
-- **Control Points Table**: Physical locations in the tracking system
+- **Products Table**: Metal construction catalog with specifications and pricing
+- **Cart Items Table**: Shopping cart functionality for order assembly
+- **Orders Table**: Customer orders with status tracking, factory assignment, priority, deadlines
+- **Order Items Table**: Individual products within orders with specifications and status
+- **Factories Table**: Production facilities with capacity, location, and specializations
 - **Sessions Table**: Session storage using text for JSON data and integer timestamps
 
 #### UI/UX Design
@@ -61,6 +63,18 @@ Preferred communication style: Simple, everyday language.
 4. **Status Management**: Elements progress through defined states (production → ready_to_ship → in_transit → in_storage → in_assembly → in_operation)
 
 ## Recent Changes
+
+### August 19, 2025
+- **Система управления заводами**: Полная реализация функционала управления производственными заводами
+  - ✅ Административная панель управления заводами (/factories)
+  - ✅ CRUD операции для заводов: создание, редактирование, удаление
+  - ✅ Отправка заказов на заводы заказчиками с выбором приоритета и сроков
+  - ✅ Панель производственных заказов для операторов заводов (/factory-orders)
+  - ✅ Фильтрация заказов по статусу и приоритету
+  - ✅ Обновление статусов заказов в процессе производства
+  - ✅ База данных SQLite расширена таблицами factories с тестовыми данными
+  - ✅ API endpoints для всех операций с заводами и производственными заказами
+  - ✅ Ролевая безопасность - только администраторы создают заводы, операторы управляют производством
 
 ### January 18, 2025
 

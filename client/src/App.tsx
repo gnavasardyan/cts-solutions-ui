@@ -19,6 +19,8 @@ import Register from "@/pages/register";
 import Catalog from "@/pages/catalog.tsx";
 import Cart from "@/pages/cart";
 import Orders from "@/pages/orders";
+import Factories from "@/pages/Factories";
+import FactoryOrders from "@/pages/FactoryOrders";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -61,6 +63,8 @@ function Router() {
                   <Route path="/catalog" component={Catalog} />
                   <Route path="/cart" component={Cart} />
                   <Route path="/orders" component={Orders} />
+                  <Route path="/factories" component={Factories} />
+                  <Route path="/factory-orders" component={FactoryOrders} />
                   {/* <Route component={NotFound} /> */}
                 </Switch>
               </div>

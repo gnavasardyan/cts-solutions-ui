@@ -1,12 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, Calendar, User, FileText, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 const ORDER_STATUS = {
   pending: { label: "В обработке", variant: "secondary" as const },
   confirmed: { label: "Подтвержден", variant: "default" as const },
+  sent_to_factory: { label: "Отправлен на завод", variant: "outline" as const },
   production: { label: "В производстве", variant: "outline" as const },
   ready: { label: "Готов к отгрузке", variant: "secondary" as const },
   shipped: { label: "Отгружен", variant: "default" as const },
@@ -14,12 +26,81 @@ const ORDER_STATUS = {
   cancelled: { label: "Отменен", variant: "destructive" as const },
 };
 
+const sendToFactorySchema = z.object({
+  factoryId: z.string().min(1, "Выберите завод"),
+  priority: z.string().default("normal"),
+  deadline: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+type SendToFactoryData = z.infer<typeof sendToFactorySchema>;
+
 export default function OrdersPage() {
+  const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['/api/orders'],
     enabled: true,
   });
+
+  // Fetch factories for sending orders
+  const { data: factories = [] } = useQuery({
+    queryKey: ['/api/factories'],
+    enabled: true,
+  });
+
+  const form = useForm<SendToFactoryData>({
+    resolver: zodResolver(sendToFactorySchema),
+    defaultValues: {
+      factoryId: "",
+      priority: "normal",
+      deadline: "",
+      notes: "",
+    },
+  });
+
+  const sendToFactoryMutation = useMutation({
+    mutationFn: async (data: { orderId: string; formData: SendToFactoryData }) => {
+      const response = await fetch(`/api/orders/${data.orderId}/send-to-factory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data.formData)
+      });
+      if (!response.ok) throw new Error('Failed to send order');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      setSendingOrderId(null);
+      form.reset();
+      toast({ description: "Заказ отправлен на завод" });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        description: "Ошибка отправки заказа на завод",
+      });
+    },
+  });
+
+  const handleSendToFactory = (data: SendToFactoryData) => {
+    if (sendingOrderId) {
+      sendToFactoryMutation.mutate({ orderId: sendingOrderId, formData: data });
+    }
+  };
+
+  const openSendDialog = (orderId: string) => {
+    setSendingOrderId(orderId);
+    form.reset();
+  };
+
+  const closeSendDialog = () => {
+    setSendingOrderId(null);
+    form.reset();
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -76,7 +157,7 @@ export default function OrdersPage() {
             </Card>
           ))}
         </div>
-      ) : orders.length === 0 ? (
+      ) : (orders as any[]).length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -93,7 +174,7 @@ export default function OrdersPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {orders.map((order: any) => (
+          {(orders as any[]).map((order: any) => (
             <Card key={order.id} className="hover:shadow-lg transition-shadow" data-testid={`order-${order.id}`}>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -206,11 +287,144 @@ export default function OrdersPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Send to Factory Button */}
+                {(order.status === "pending" || order.status === "confirmed") && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      onClick={() => openSendDialog(order.id)}
+                      className="w-full"
+                      data-testid={`button-send-to-factory-${order.id}`}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Отправить на завод
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Send to Factory Dialog */}
+      <Dialog open={sendingOrderId !== null} onOpenChange={closeSendDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Отправить заказ на завод</DialogTitle>
+            <DialogDescription>
+              Выберите завод и укажите параметры для производства
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSendToFactory)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="factoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Завод</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-factory">
+                          <SelectValue placeholder="Выберите завод" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(factories as any[]).map((factory: any) => (
+                          <SelectItem key={factory.id} value={factory.id}>
+                            <div className="flex items-center gap-2">
+                              <Factory className="h-3 w-3" />
+                              <div>
+                                <div className="font-medium">{factory.name}</div>
+                                <div className="text-xs text-gray-500">{factory.location}</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Приоритет</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-priority">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Низкий</SelectItem>
+                        <SelectItem value="normal">Обычный</SelectItem>
+                        <SelectItem value="high">Высокий</SelectItem>
+                        <SelectItem value="urgent">Срочный</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Срок выполнения (необязательно)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        data-testid="input-deadline"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Примечания (необязательно)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Дополнительные требования к производству..."
+                        {...field}
+                        data-testid="textarea-notes"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={closeSendDialog}>
+                  Отмена
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={sendToFactoryMutation.isPending}
+                  data-testid="button-submit-send-to-factory"
+                >
+                  {sendToFactoryMutation.isPending ? "Отправка..." : "Отправить"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

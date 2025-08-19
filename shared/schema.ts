@@ -156,24 +156,30 @@ export const products = sqliteTable("products", {
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
 });
 
-// Orders table
+// Orders table - updated with factory support and production workflow
 export const orders = sqliteTable("orders", {
   id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  orderNumber: text("order_number").notNull().unique(),
   customerId: text("customer_id").notNull(),
-  status: text("status").notNull().default("draft"), // draft, pending, approved, in_production, completed, cancelled
+  factoryId: text("factory_id"), // Reference to assigned factory
+  status: text("status").notNull().default("draft"), // draft, sent_to_factory, new, in_production, ready_to_ship, shipped, delivered, cancelled
+  priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
   totalAmount: real("total_amount").notNull().default(0),
+  deadline: integer("deadline"), // Unix timestamp for delivery deadline
   notes: text("notes"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
 });
 
-// Order items table
+// Order items table - updated with production tracking
 export const orderItems = sqliteTable("order_items", {
   id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
   orderId: text("order_id").notNull(),
   productId: text("product_id").notNull(),
   quantity: integer("quantity").notNull(),
   price: real("price").notNull(),
+  specifications: text("specifications"), // Additional specs for this order item
+  status: text("status").notNull().default("pending"), // pending, in_production, completed
   createdAt: integer("created_at").default(sql`(unixepoch())`),
 });
 
@@ -187,6 +193,20 @@ export const cartItems = sqliteTable("cart_items", {
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
 });
 
+// Factories table
+export const factories = sqliteTable("factories", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  name: text("name").notNull(),
+  location: text("location").notNull(),
+  address: text("address").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone").notNull(),
+  capacity: integer("capacity").notNull(),
+  specializations: text("specializations").notNull(), // JSON array of product categories
+  isActive: text("is_active").notNull().default("true"),
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+});
+
 // Additional relations
 export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
@@ -197,6 +217,10 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   customer: one(users, {
     fields: [orders.customerId],
     references: [users.id],
+  }),
+  factory: one(factories, {
+    fields: [orders.factoryId],
+    references: [factories.id],
   }),
   items: many(orderItems),
 }));
@@ -221,6 +245,11 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
     fields: [cartItems.productId],
     references: [products.id],
   }),
+}));
+
+// Factory relations
+export const factoriesRelations = relations(factories, ({ many }) => ({
+  orders: many(orders),
 }));
 
 // Insert schemas
@@ -283,6 +312,22 @@ export const insertCartItemSchema = createInsertSchema(cartItems).omit({
   updatedAt: true,
 });
 
+// Factory insert schema
+export const insertFactorySchema = createInsertSchema(factories).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Updated order schema to include new fields
+export const updateOrderSchema = z.object({
+  orderNumber: z.string().optional(),
+  factoryId: z.string().optional(),
+  status: z.enum(["draft", "sent_to_factory", "new", "in_production", "ready_to_ship", "shipped", "delivered", "cancelled"]).optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+  deadline: z.number().optional(),
+  notes: z.string().optional(),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -304,6 +349,9 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+export type Factory = typeof factories.$inferSelect;
+export type InsertFactory = z.infer<typeof insertFactorySchema>;
+export type UpdateOrder = z.infer<typeof updateOrderSchema>;
 
 // Role constants for easy reference
 export const UserRoles = {
