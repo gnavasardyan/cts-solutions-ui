@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory } from "lucide-react";
+import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory, Edit2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 const ORDER_STATUS = {
@@ -37,6 +37,7 @@ type SendToFactoryData = z.infer<typeof sendToFactorySchema>;
 
 export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -69,30 +70,47 @@ export default function OrdersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       setSendingOrderId(null);
+      setEditingOrderId(null);
       form.reset();
-      toast({ description: "Заказ отправлен на завод" });
+      toast({ description: editingOrderId ? "Завод изменён" : "Заказ отправлен на завод" });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
-        description: "Ошибка отправки заказа на завод",
+        description: editingOrderId ? "Ошибка изменения завода" : "Ошибка отправки заказа на завод",
       });
     },
   });
 
   const handleSendToFactory = (data: SendToFactoryData) => {
-    if (sendingOrderId) {
-      sendToFactoryMutation.mutate({ orderId: sendingOrderId, formData: data });
+    const orderId = sendingOrderId || editingOrderId;
+    if (orderId) {
+      sendToFactoryMutation.mutate({ orderId, formData: data });
     }
   };
 
   const openSendDialog = (orderId: string) => {
     setSendingOrderId(orderId);
+    setEditingOrderId(null);
     form.reset();
+  };
+
+  const openEditDialog = (order: any) => {
+    setEditingOrderId(order.id);
+    setSendingOrderId(null);
+    // Pre-fill the form with current factory data
+    const currentFactory = factories.find((f: any) => f.id === order.factoryId);
+    form.reset({
+      factoryId: order.factoryId || "",
+      priority: order.priority || "normal",
+      deadline: order.deadline ? new Date(order.deadline * 1000).toISOString().split('T')[0] : "",
+      notes: order.notes || "",
+    });
   };
 
   const closeSendDialog = () => {
     setSendingOrderId(null);
+    setEditingOrderId(null);
     form.reset();
   };
 
@@ -227,6 +245,55 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
+                {/* Factory Information */}
+                {order.factoryId && (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Factory className="h-4 w-4" />
+                        Завод
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(order)}
+                        className="h-8 px-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        data-testid={`button-edit-factory-${order.id}`}
+                      >
+                        <Edit2 className="h-3 w-3 mr-1" />
+                        Изменить
+                      </Button>
+                    </div>
+                    {(() => {
+                      const factory = (factories as any[]).find((f: any) => f.id === order.factoryId);
+                      return (
+                        <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                          <div className="font-medium text-sm">
+                            {factory ? factory.name : 'Завод не найден'}
+                          </div>
+                          {factory && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              {factory.location}
+                              {order.priority && order.priority !== 'normal' && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 rounded text-xs">
+                                  {order.priority === 'urgent' ? 'Срочный' : 
+                                   order.priority === 'high' ? 'Высокий' : 
+                                   order.priority === 'low' ? 'Низкий' : 'Обычный'}
+                                </span>
+                              )}
+                              {order.deadline && (
+                                <span className="ml-2 text-xs">
+                                  до {new Date(order.deadline * 1000).toLocaleDateString('ru-RU')}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 {/* Order Notes */}
                 {order.notes && (
                   <div>
@@ -302,12 +369,17 @@ export default function OrdersPage() {
       )}
 
       {/* Send to Factory Dialog */}
-      <Dialog open={sendingOrderId !== null} onOpenChange={closeSendDialog}>
+      <Dialog open={sendingOrderId !== null || editingOrderId !== null} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Отправить заказ на завод</DialogTitle>
+            <DialogTitle>
+              {editingOrderId ? "Изменить завод" : "Отправить заказ на завод"}
+            </DialogTitle>
             <DialogDescription>
-              Выберите завод и укажите параметры для производства
+              {editingOrderId 
+                ? "Измените завод и параметры производства"
+                : "Выберите завод и укажите параметры для производства"
+              }
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -412,7 +484,10 @@ export default function OrdersPage() {
                   disabled={sendToFactoryMutation.isPending}
                   data-testid="button-submit-send-to-factory"
                 >
-                  {sendToFactoryMutation.isPending ? "Отправка..." : "Отправить"}
+                  {sendToFactoryMutation.isPending 
+                    ? (editingOrderId ? "Сохранение..." : "Отправка...") 
+                    : (editingOrderId ? "Сохранить изменения" : "Отправить")
+                  }
                 </Button>
               </div>
             </form>
