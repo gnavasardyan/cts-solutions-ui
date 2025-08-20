@@ -110,13 +110,13 @@ export default function ProductionDashboard() {
   const queryClient = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery<ProductionOrder[]>({
-    queryKey: ["/api/orders/factory", statusFilter, priorityFilter],
+    queryKey: ["/api/factory/orders", statusFilter, priorityFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (priorityFilter !== "all") params.append("priority", priorityFilter);
       
-      const url = `/api/orders/factory${params.toString() ? `?${params.toString()}` : ""}`;
+      const url = `/api/factory/orders${params.toString() ? `?${params.toString()}` : ""}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();

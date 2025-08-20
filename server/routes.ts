@@ -499,6 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const orders = await storage.getFactoryOrders(filters);
+      
       res.json(orders);
     } catch (error) {
       console.error('Get factory orders error:', error);
