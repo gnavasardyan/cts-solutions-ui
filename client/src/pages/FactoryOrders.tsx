@@ -109,6 +109,7 @@ export default function FactoryOrders() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all factory orders queries regardless of filters
       queryClient.invalidateQueries({ queryKey: ["/api/factory/orders"] });
       toast({ description: "Статус заказа обновлен" });
     },
@@ -126,8 +127,14 @@ export default function FactoryOrders() {
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "sent_to_factory":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "accepted":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300";
       case "in_production":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+      case "ready_for_marking":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
+      case "packed":
+        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300";
       case "completed":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "shipped":
@@ -156,7 +163,10 @@ export default function FactoryOrders() {
     switch (status) {
       case "new": return "Новый";
       case "sent_to_factory": return "Отправлен на завод";
+      case "accepted": return "Принят";
       case "in_production": return "В производстве";
+      case "ready_for_marking": return "Готов к маркировке";
+      case "packed": return "Упакован";
       case "completed": return "Выполнен";
       case "shipped": return "Отгружен";
       default: return status;
@@ -217,10 +227,12 @@ export default function FactoryOrders() {
             <SelectContent>
               <SelectItem value="all">Все статусы</SelectItem>
               <SelectItem value="new">Новые</SelectItem>
-              <SelectItem value="sent_to_factory">На заводе</SelectItem>
+              <SelectItem value="sent_to_factory">Отправлен на завод</SelectItem>
+              <SelectItem value="accepted">Принят</SelectItem>
               <SelectItem value="in_production">В производстве</SelectItem>
-              <SelectItem value="completed">Выполнены</SelectItem>
-              <SelectItem value="shipped">Отгружены</SelectItem>
+              <SelectItem value="ready_for_marking">Готов к маркировке</SelectItem>
+              <SelectItem value="packed">Упакован</SelectItem>
+              <SelectItem value="shipped">Отгружен</SelectItem>
             </SelectContent>
           </Select>
         </div>
