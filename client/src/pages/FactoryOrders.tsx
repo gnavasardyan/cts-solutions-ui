@@ -55,7 +55,14 @@ export default function FactoryOrders() {
   const queryClient = useQueryClient();
 
   // Get current user info
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<{
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    factoryId?: string;
+  }>({
     queryKey: ["/api/auth/user"],
   });
 
@@ -65,7 +72,7 @@ export default function FactoryOrders() {
     enabled: !!user?.factoryId,
     queryFn: async () => {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`/api/factories/${user.factoryId}`, {
+      const response = await fetch(`/api/factories/${user?.factoryId}`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         }
