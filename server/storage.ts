@@ -535,7 +535,7 @@ export class DatabaseStorage implements IStorage {
     return updatedOrder;
   }
 
-  async getFactoryOrders(filters?: { status?: string; priority?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]> {
+  async getFactoryOrders(filters?: { status?: string; priority?: string; factoryId?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]> {
     let whereConditions = [];
     
     if (filters?.status) {
@@ -547,6 +547,10 @@ export class DatabaseStorage implements IStorage {
     
     if (filters?.priority) {
       whereConditions.push(eq(orders.priority, filters.priority));
+    }
+    
+    if (filters?.factoryId) {
+      whereConditions.push(eq(orders.factoryId, filters.factoryId));
     }
 
     const orderResults = await db.select({

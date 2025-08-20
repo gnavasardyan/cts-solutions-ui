@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,13 @@ export default function Register() {
     firstName: "",
     lastName: "",
     role: "customer_operator",
+    factoryId: "",
+  });
+  
+  // Fetch factories for factory operator role
+  const { data: factories = [] } = useQuery({
+    queryKey: ["/api/factories"],
+    enabled: formData.role === "factory_operator"
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,8 +45,9 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const { confirmPassword, ...registerData } = formData;
-      const response = await apiRequest("POST", "/api/auth/register", registerData);
+      const { confirmPassword, factoryId, ...registerData } = formData;
+      const finalData = formData.role === "factory_operator" ? { ...registerData, factoryId } : registerData;
+      const response = await apiRequest("POST", "/api/auth/register", finalData);
       
       // Store token in localStorage
       localStorage.setItem("authToken", response.token);
@@ -128,7 +137,7 @@ export default function Register() {
                 <Label htmlFor="role">Роль</Label>
                 <Select 
                   value={formData.role} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, role: value, factoryId: "" }))}
                 >
                   <SelectTrigger className="h-12">
                     <SelectValue />
@@ -142,6 +151,27 @@ export default function Register() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.role === "factory_operator" && (
+                <div>
+                  <Label htmlFor="factory">Завод</Label>
+                  <Select 
+                    value={formData.factoryId} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, factoryId: value }))}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Выберите завод" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(factories as any[]).map((factory: any) => (
+                        <SelectItem key={factory.id} value={factory.id}>
+                          {factory.name} - {factory.location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
               <div>
                 <Label htmlFor="password">Пароль</Label>

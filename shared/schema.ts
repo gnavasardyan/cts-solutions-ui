@@ -31,6 +31,7 @@ export const users = sqliteTable("users", {
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
   role: text("role").notNull().default("customer_operator"), // administrator, customer_operator, factory_operator, warehouse_keeper, site_master
+  factoryId: text("factory_id"), // For factory operators
   isActive: text("is_active").notNull().default("true"),
   createdAt: integer("created_at").default(sql`(unixepoch())`),
   updatedAt: integer("updated_at").default(sql`(unixepoch())`),
@@ -359,6 +360,7 @@ export const registerSchema = z.object({
   firstName: z.string().min(1, "Имя обязательно"),
   lastName: z.string().min(1, "Фамилия обязательна"),
   role: z.enum(["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master"]).default("customer_operator"),
+  factoryId: z.string().optional(),
 });
 
 // New schemas for products and orders

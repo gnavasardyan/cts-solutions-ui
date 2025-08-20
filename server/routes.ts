@@ -493,7 +493,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status, priority } = req.query;
       const filters = { 
         status: status as string, 
-        priority: priority as string 
+        priority: priority as string,
+        // For factory operators, filter by their assigned factory
+        factoryId: req.user.role === 'factory_operator' ? req.user.factoryId : undefined
       };
       
       const orders = await storage.getFactoryOrders(filters);
