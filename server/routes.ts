@@ -504,6 +504,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Production markings API
+  app.post('/api/production/markings', authenticateToken, requireRole([UserRoles.FACTORY_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const { markings } = req.body;
+      
+      if (!Array.isArray(markings) || markings.length === 0) {
+        return res.status(400).json({ message: 'Необходимо указать маркировки' });
+      }
+      
+      const createdMarkings = [];
+      for (const marking of markings) {
+        const createdMarking = await storage.createProductionMarking({
+          ...marking,
+          operatorId: req.user.id
+        });
+        createdMarkings.push(createdMarking);
+      }
+      
+      res.json({ markings: createdMarkings });
+    } catch (error) {
+      console.error('Create markings error:', error);
+      res.status(500).json({ message: 'Ошибка создания маркировок' });
+    }
+  });
+
+  // Production shipments API
+  app.post('/api/production/shipments', authenticateToken, requireRole([UserRoles.FACTORY_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      const { orderIds, ...shipmentData } = req.body;
+      
+      if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ message: 'Необходимо указать заказы для отгрузки' });
+      }
+      
+      // Create shipment
+      const shipment = await storage.createShipment({
+        ...shipmentData,
+        operatorId: req.user.id,
+        factoryId: req.user.factoryId || 'DEFAULT_FACTORY' // TODO: get from user or context
+      });
+      
+      // Add orders to shipment
+      await storage.addOrdersToShipment(shipment.id, orderIds);
+      
+      // Update order statuses to 'shipped'
+      for (const orderId of orderIds) {
+        await storage.updateOrderStatus(orderId, 'shipped');
+      }
+      
+      res.json({ shipment, message: 'Отгрузка создана успешно' });
+    } catch (error) {
+      console.error('Create shipment error:', error);
+      res.status(500).json({ message: 'Ошибка создания отгрузки' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

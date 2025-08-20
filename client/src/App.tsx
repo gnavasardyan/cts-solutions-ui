@@ -21,6 +21,7 @@ import Cart from "@/pages/cart";
 import Orders from "@/pages/orders";
 import Factories from "@/pages/Factories";
 import FactoryOrders from "@/pages/FactoryOrders";
+import ProductionDashboard from "@/pages/ProductionDashboard";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -65,6 +66,7 @@ function Router() {
                   <Route path="/orders" component={Orders} />
                   <Route path="/factories" component={Factories} />
                   <Route path="/factory-orders" component={FactoryOrders} />
+                  <Route path="/production" component={ProductionDashboard} />
                   {/* <Route component={NotFound} /> */}
                 </Switch>
               </div>

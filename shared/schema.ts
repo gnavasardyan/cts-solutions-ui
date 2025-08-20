@@ -162,7 +162,7 @@ export const orders = sqliteTable("orders", {
   orderNumber: text("order_number").notNull().unique(),
   customerId: text("customer_id").notNull(),
   factoryId: text("factory_id"), // Reference to assigned factory
-  status: text("status").notNull().default("draft"), // draft, sent_to_factory, new, in_production, ready_to_ship, shipped, delivered, cancelled
+  status: text("status").notNull().default("draft"), // draft, confirmed, sent_to_factory, accepted, in_production, ready_for_marking, packed, shipped, delivered, cancelled
   priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
   totalAmount: real("total_amount").notNull().default(0),
   deadline: integer("deadline"), // Unix timestamp for delivery deadline
@@ -179,7 +179,7 @@ export const orderItems = sqliteTable("order_items", {
   quantity: integer("quantity").notNull(),
   price: real("price").notNull(),
   specifications: text("specifications"), // Additional specs for this order item
-  status: text("status").notNull().default("pending"), // pending, in_production, completed
+  status: text("status").notNull().default("pending"), // pending, accepted, in_production, ready_for_marking, marked, packed, shipped
   createdAt: integer("created_at").default(sql`(unixepoch())`),
 });
 
@@ -247,9 +247,82 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
   }),
 }));
 
+// Production markings table
+export const productionMarkings = sqliteTable("production_markings", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  orderItemId: text("order_item_id").notNull(),
+  markingCode: text("marking_code").notNull().unique(), // Data Matrix code
+  markingType: text("marking_type").notNull(), // "data_matrix", "gs1_128_sscc"
+  operatorId: text("operator_id").notNull(),
+  markedAt: integer("marked_at").default(sql`(unixepoch())`),
+  printerModel: text("printer_model"), // Zebra ZT410, Honeywell PM43, etc.
+  isValid: text("is_valid").notNull().default("true"),
+});
+
+// Shipments table
+export const shipments = sqliteTable("shipments", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  shipmentNumber: text("shipment_number").notNull().unique(),
+  factoryId: text("factory_id").notNull(),
+  transportType: text("transport_type").notNull(), // truck, rail, sea
+  transportUnit: text("transport_unit"), // vehicle/container identifier
+  weight: real("weight"),
+  dimensions: text("dimensions"), // JSON: length, width, height
+  status: text("status").notNull().default("preparing"), // preparing, ready, shipped, delivered
+  createdAt: integer("created_at").default(sql`(unixepoch())`),
+  shippedAt: integer("shipped_at"),
+  operatorId: text("operator_id").notNull(),
+});
+
+// Shipment items table (linking orders to shipments)
+export const shipmentItems = sqliteTable("shipment_items", {
+  id: text("id").primaryKey().default(sql`(hex(randomblob(16)))`),
+  shipmentId: text("shipment_id").notNull(),
+  orderId: text("order_id").notNull(),
+  ssccCode: text("sscc_code").notNull().unique(), // GS1-128 SSCC for logistics
+});
+
 // Factory relations
 export const factoriesRelations = relations(factories, ({ many }) => ({
   orders: many(orders),
+  shipments: many(shipments),
+}));
+
+// Production markings relations
+export const productionMarkingsRelations = relations(productionMarkings, ({ one }) => ({
+  orderItem: one(orderItems, {
+    fields: [productionMarkings.orderItemId],
+    references: [orderItems.id],
+  }),
+  operator: one(users, {
+    fields: [productionMarkings.operatorId],
+    references: [users.id],
+  }),
+}));
+
+// Shipments relations
+export const shipmentsRelations = relations(shipments, ({ one, many }) => ({
+  factory: one(factories, {
+    fields: [shipments.factoryId],
+    references: [factories.id],
+  }),
+  operator: one(users, {
+    fields: [shipments.operatorId],
+    references: [users.id],
+  }),
+  items: many(shipmentItems),
+}));
+
+// Shipment items relations
+export const shipmentItemsRelations = relations(shipmentItems, ({ one }) => ({
+  shipment: one(shipments, {
+    fields: [shipmentItems.shipmentId],
+    references: [shipments.id],
+  }),
+  order: one(orders, {
+    fields: [shipmentItems.orderId],
+    references: [orders.id],
+  }),
 }));
 
 // Insert schemas
@@ -318,6 +391,28 @@ export const insertFactorySchema = createInsertSchema(factories).omit({
   id: true,
   createdAt: true,
 });
+
+export const insertProductionMarkingSchema = createInsertSchema(productionMarkings).omit({
+  id: true,
+  markedAt: true,
+});
+
+export const insertShipmentSchema = createInsertSchema(shipments).omit({
+  id: true,
+  createdAt: true,
+  shippedAt: true,
+});
+
+export const insertShipmentItemSchema = createInsertSchema(shipmentItems).omit({
+  id: true,
+});
+
+// Additional type exports for production features
+export type ProductionMarking = typeof productionMarkings.$inferSelect;
+export type InsertProductionMarking = z.infer<typeof insertProductionMarkingSchema>;
+export type Shipment = typeof shipments.$inferSelect;
+export type InsertShipment = z.infer<typeof insertShipmentSchema>;
+export type ShipmentItem = typeof shipmentItems.$inferSelect;
 
 // Updated order schema to include new fields
 export const updateOrderSchema = z.object({

@@ -336,7 +336,7 @@ export class DatabaseStorage implements IStorage {
       const [updated] = await db
         .update(cartItems)
         .set({
-          quantity: existing.quantity + cartItem.quantity,
+          quantity: existing.quantity + (cartItem.quantity || 0),
           updatedAt: Math.floor(Date.now() / 1000),
         })
         .where(eq(cartItems.id, existing.id))
@@ -383,6 +383,8 @@ export class DatabaseStorage implements IStorage {
             productId: orderItems.productId,
             quantity: orderItems.quantity,
             price: orderItems.price,
+            specifications: orderItems.specifications,
+            status: orderItems.status,
             createdAt: orderItems.createdAt,
             product: products
           })
@@ -426,6 +428,8 @@ export class DatabaseStorage implements IStorage {
             productId: orderItems.productId,
             quantity: orderItems.quantity,
             price: orderItems.price,
+            specifications: orderItems.specifications,
+            status: orderItems.status,
             createdAt: orderItems.createdAt,
             product: products
           })
@@ -576,6 +580,57 @@ export class DatabaseStorage implements IStorage {
     );
 
     return ordersWithItems;
+  }
+
+  // Production operations
+  async createProductionMarking(marking: any): Promise<any> {
+    const newMarkingData = {
+      ...marking,
+      id: crypto.randomUUID().replace(/-/g, '').toUpperCase(),
+      markedAt: Math.floor(Date.now() / 1000),
+      isValid: "true"
+    };
+    
+    // Import the new tables
+    const { productionMarkings } = await import("@shared/schema");
+    const [newMarking] = await db.insert(productionMarkings).values(newMarkingData).returning();
+    return newMarking;
+  }
+
+  async createShipment(shipment: any): Promise<any> {
+    const shipmentNumber = `SHP-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+    
+    const newShipmentData = {
+      ...shipment,
+      id: crypto.randomUUID().replace(/-/g, '').toUpperCase(),
+      shipmentNumber,
+      status: "preparing",
+      createdAt: Math.floor(Date.now() / 1000)
+    };
+    
+    // Import the new tables
+    const { shipments } = await import("@shared/schema");
+    const [newShipment] = await db.insert(shipments).values(newShipmentData).returning();
+    return newShipment;
+  }
+
+  async addOrdersToShipment(shipmentId: string, orderIds: string[]): Promise<any[]> {
+    const { shipmentItems } = await import("@shared/schema");
+    
+    const shipmentItemsData = orderIds.map(orderId => ({
+      id: crypto.randomUUID().replace(/-/g, '').toUpperCase(),
+      shipmentId,
+      orderId,
+      ssccCode: `SSCC${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`
+    }));
+
+    const items = await db.insert(shipmentItems).values(shipmentItemsData).returning();
+    return items;
+  }
+
+  async getProductionMarkingsByOrderItem(orderItemId: string): Promise<any[]> {
+    const { productionMarkings } = await import("@shared/schema");
+    return await db.select().from(productionMarkings).where(eq(productionMarkings.orderItemId, orderItemId));
   }
 }
 
