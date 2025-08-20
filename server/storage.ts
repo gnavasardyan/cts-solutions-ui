@@ -541,8 +541,8 @@ export class DatabaseStorage implements IStorage {
     if (filters?.status) {
       whereConditions.push(eq(orders.status, filters.status));
     } else {
-      // Default to orders sent to factory or in production
-      whereConditions.push(sql`${orders.status} IN ('sent_to_factory', 'new', 'in_production')`);
+      // Default to all factory-related statuses
+      whereConditions.push(sql`${orders.status} IN ('sent_to_factory', 'new', 'accepted', 'in_production', 'ready_for_marking', 'packed', 'shipped')`);
     }
     
     if (filters?.priority) {
