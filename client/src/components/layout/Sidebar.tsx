@@ -29,7 +29,7 @@ export function Sidebar() {
     { path: "/cart", label: "Корзина", icon: ShoppingCart, roles: ["administrator", "customer_operator"] },
     { path: "/orders", label: "Заказы", icon: FileText, roles: ["administrator", "customer_operator"] },
     { path: "/factory-orders", label: "Заказы завода", icon: FileText, roles: ["administrator", "factory_operator"] },
-    { path: "/production", label: "Производство", icon: Package, roles: ["administrator", "factory_operator"] },
+    { path: "/production", label: "Производство", icon: Package, roles: ["administrator"] },
     { path: "/factories", label: "Заводы", icon: Package, roles: ["administrator"] },
     { path: "/marking", label: "Маркировка", icon: Tag, roles: ["administrator", "factory_operator"] },
     { path: "/scanning", label: "Сканирование", icon: Scan, roles: ["administrator", "warehouse_keeper", "site_master"] },

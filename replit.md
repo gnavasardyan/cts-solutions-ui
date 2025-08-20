@@ -30,8 +30,12 @@ Preferred communication style: Simple, everyday language.
 - Authentication is currently a custom JWT-based system with bcrypt hashing.
 - Role-based access control is integrated, with roles including Administrator, Оператор заказчика, Оператор производства, Оператор логистики, and Оператор стройки.
 
-#### Production Operator Dashboard Requirements
-- Order management with production workflow: Принят → В производстве → Готов к маркировке → Упакован → Отгружен
+#### Factory Operator Dashboard
+- Simplified interface showing only "Заказы завода" (Factory Orders) section
+- Removed "Производство" (Production) functionality from factory operator navigation
+- Factory-specific order filtering: operators see only orders assigned to their factory
+- Factory name and location displayed in dashboard header for context
+- Order management with workflow: Принят → В производстве → Готов к маркировке → Упакован → Отгружен
 - Filtering by priority (срочность), construction type, and status (Новый/В работе)
 - Marking system support: Data Matrix for products, GS-128 (SSCC) for logistics units
 - Printer integration: Zebra ZT410, Honeywell PM43, Cognex
