@@ -54,6 +54,27 @@ export default function FactoryOrders() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current user info
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+
+  // Get factory info for the current user
+  const { data: factory } = useQuery({
+    queryKey: ["/api/factories", user?.factoryId],
+    enabled: !!user?.factoryId,
+    queryFn: async () => {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/factories/${user.factoryId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch factory');
+      return response.json();
+    }
+  });
+
   const { data: orders = [], isLoading } = useQuery<FactoryOrder[]>({
     queryKey: ["/api/factory/orders", statusFilter, priorityFilter],
     queryFn: async () => {
@@ -167,9 +188,21 @@ export default function FactoryOrders() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Производственные заказы</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <Factory className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Заказы завода</h1>
+            {factory && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-lg font-semibold text-primary">{factory.name}</span>
+                <span className="text-gray-500">•</span>
+                <span className="text-gray-600 dark:text-gray-400">{factory.location}</span>
+              </div>
+            )}
+          </div>
+        </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Управление заказами на производстве металлоконструкций
+          Управление заказами, назначенными на ваш завод
         </p>
       </div>
 
