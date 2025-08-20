@@ -168,9 +168,13 @@ export default function ProductionDashboard() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/orders/${orderId}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
         body: JSON.stringify({ status })
       });
       if (!response.ok) throw new Error('Failed to update status');
@@ -197,16 +201,20 @@ export default function ProductionDashboard() {
         printerModel: data.printerModel,
       }));
       
+      const token = localStorage.getItem('authToken');
       const response = await fetch('/api/production/markings', {
         method: 'POST',
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
         body: JSON.stringify({ markings })
       });
       if (!response.ok) throw new Error('Failed to create markings');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders/factory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/factory/orders"] });
       toast({ description: "Маркировка создана успешно" });
       setMarkingDialogOpen(false);
       markingForm.reset();

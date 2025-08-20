@@ -55,14 +55,19 @@ export default function FactoryOrders() {
   const queryClient = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery<FactoryOrder[]>({
-    queryKey: ["/api/orders/factory", statusFilter, priorityFilter],
+    queryKey: ["/api/factory/orders", statusFilter, priorityFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (priorityFilter !== "all") params.append("priority", priorityFilter);
       
-      const url = `/api/orders/factory${params.toString() ? `?${params.toString()}` : ""}`;
-      const response = await fetch(url);
+      const url = `/api/factory/orders${params.toString() ? `?${params.toString()}` : ""}`;
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
@@ -70,16 +75,20 @@ export default function FactoryOrders() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/orders/${orderId}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
         body: JSON.stringify({ status })
       });
       if (!response.ok) throw new Error('Failed to update status');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders/factory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/factory/orders"] });
       toast({ description: "Статус заказа обновлен" });
     },
     onError: () => {
