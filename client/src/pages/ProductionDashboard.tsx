@@ -109,6 +109,27 @@ export default function ProductionDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current user info
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+
+  // Get factory info for the current user
+  const { data: factory } = useQuery({
+    queryKey: ["/api/factories", user?.factoryId],
+    enabled: !!user?.factoryId,
+    queryFn: async () => {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/factories/${user.factoryId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch factory');
+      return response.json();
+    }
+  });
+
   const { data: orders = [], isLoading } = useQuery<ProductionOrder[]>({
     queryKey: ["/api/factory/orders", statusFilter, priorityFilter],
     queryFn: async () => {
@@ -117,7 +138,12 @@ export default function ProductionDashboard() {
       if (priorityFilter !== "all") params.append("priority", priorityFilter);
       
       const url = `/api/factory/orders${params.toString() ? `?${params.toString()}` : ""}`;
-      const response = await fetch(url);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch orders');
       return response.json();
     },
@@ -151,7 +177,7 @@ export default function ProductionDashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders/factory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/factory/orders"] });
       toast({ description: "Статус заказа обновлен" });
     },
     onError: () => {
@@ -314,7 +340,22 @@ export default function ProductionDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Производство металлоконструкций</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <Factory className="h-8 w-8 text-industrial-blue" />
+          <div>
+            <h1 className="text-3xl font-bold">Производство металлоконструкций</h1>
+            {factory && (
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="bg-industrial-blue/10 text-industrial-blue border-industrial-blue/20">
+                  {factory.name}
+                </Badge>
+                <span className="text-sm text-gray-500">
+                  {factory.location}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
         <p className="text-gray-600 dark:text-gray-400">
           Управление производственными заказами от принятия до отгрузки
         </p>
