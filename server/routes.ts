@@ -418,6 +418,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/factories/:id', async (req: any, res) => {
+    try {
+      const id = req.params.id;
+      const factory = await storage.getFactoryById(id);
+      
+      if (!factory) {
+        return res.status(404).json({ message: 'Завод не найден' });
+      }
+      
+      res.json(factory);
+    } catch (error) {
+      console.error('Get factory error:', error);
+      res.status(500).json({ message: 'Ошибка получения завода' });
+    }
+  });
+
   app.post('/api/factories', async (req: any, res) => {
     try {
       // Преобразуем specializations в строку если это массив
