@@ -38,10 +38,21 @@ const sendToFactorySchema = z.object({
 
 type SendToFactoryData = z.infer<typeof sendToFactorySchema>;
 
+const createOrderSchema = z.object({
+  status: z.string().default("pending"),
+  priority: z.string().default("normal"),
+  deadline: z.string().optional(),
+  notes: z.string().optional(),
+  totalAmount: z.number().default(0),
+});
+
+type CreateOrderData = z.infer<typeof createOrderSchema>;
+
 export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("order");
+  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -74,6 +85,45 @@ export default function OrdersPage() {
     },
   });
 
+  const createOrderForm = useForm<CreateOrderData>({
+    resolver: zodResolver(createOrderSchema),
+    defaultValues: {
+      status: "pending",
+      priority: "normal",
+      deadline: "",
+      notes: "",
+      totalAmount: 0,
+    },
+  });
+
+  const createOrderMutation = useMutation({
+    mutationFn: async (data: CreateOrderData) => {
+      return await apiRequest("POST", "/api/orders", {
+        status: data.status || "pending",
+        priority: data.priority,
+        deadline: data.deadline ? Math.floor(new Date(data.deadline).getTime() / 1000) : undefined,
+        notes: data.notes,
+        totalAmount: data.totalAmount,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsCreateOrderOpen(false);
+      createOrderForm.reset();
+      toast({
+        title: "Заказ создан",
+        description: "Новый заказ успешно создан",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать заказ",
+        variant: "destructive",
+      });
+    },
+  });
+
   const sendToFactoryMutation = useMutation({
     mutationFn: async (data: { orderId: string; formData: SendToFactoryData }) => {
       return await apiRequest("POST", `/api/orders/${data.orderId}/send-to-factory`, data.formData);
@@ -92,6 +142,10 @@ export default function OrdersPage() {
       });
     },
   });
+
+  const handleCreateOrder = (data: CreateOrderData) => {
+    createOrderMutation.mutate(data);
+  };
 
   const handleSendToFactory = (data: SendToFactoryData) => {
     const orderId = sendingOrderId || editingOrderId;
@@ -149,7 +203,7 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Заказ</h2>
         <Button 
-          onClick={() => window.location.href = '/catalog'}
+          onClick={() => setIsCreateOrderOpen(true)}
           className="bg-blue-600 hover:bg-blue-700"
           data-testid="button-new-order"
         >
@@ -510,6 +564,108 @@ export default function OrdersPage() {
             <OrdersTableView />
           </TabsContent>
         </Tabs>
+
+        {/* Create Order Dialog */}
+        <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Создать новый заказ</DialogTitle>
+              <DialogDescription>
+                Укажите приоритет и срок выполнения заказа
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...createOrderForm}>
+              <form onSubmit={createOrderForm.handleSubmit(handleCreateOrder)} className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                    Создание заказа
+                  </h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    После создания заказа вы сможете добавить товары через каталог и отправить заказ на завод.
+                  </p>
+                </div>
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Приоритет</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-order-priority">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="low">Низкий</SelectItem>
+                          <SelectItem value="normal">Обычный</SelectItem>
+                          <SelectItem value="high">Высокий</SelectItem>
+                          <SelectItem value="urgent">Срочный</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="deadline"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Срок выполнения (необязательно)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          data-testid="input-order-deadline"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Примечания (необязательно)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Дополнительные требования или комментарии" 
+                          {...field} 
+                          data-testid="textarea-order-notes"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsCreateOrderOpen(false)}
+                    data-testid="button-cancel-order"
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createOrderMutation.isPending}
+                    data-testid="button-submit-order"
+                  >
+                    {createOrderMutation.isPending ? "Создание..." : "Создать заказ"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
