@@ -41,7 +41,7 @@ type SendToFactoryData = z.infer<typeof sendToFactorySchema>;
 export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("orders");
+  const [activeTab, setActiveTab] = useState("order");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
