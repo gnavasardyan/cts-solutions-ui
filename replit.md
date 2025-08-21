@@ -17,8 +17,8 @@ Preferred communication style: Simple, everyday language.
 - Enhanced order creation form: replaced redirect to catalog with comprehensive pop-up modal
 - Added full order creation form with all parameters: title, construction type, factory selection, delivery address, contact info, budget, priority, deadline, notes
 - Factory selection integrated into order creation process with mandatory assignment
-- Removed catalog and cart access for customer operators - all ordering now happens through pop-up form
-- Simplified customer interface to focus only on order management
+- Removed catalog access for customer operators, but kept cart access
+- Customer interface simplified with pop-up order creation and cart functionality
 
 ## System Architecture
 

@@ -11,7 +11,7 @@ export function TopNavigation() {
   const navItems = [
     { path: "/", label: "Панель управления", roles: ["administrator", "factory_operator", "warehouse_keeper", "site_master", "auditor"] },
     { path: "/catalog", label: "Каталог", roles: ["administrator"] },
-    { path: "/cart", label: "Корзина", roles: ["administrator"] },
+    { path: "/cart", label: "Корзина", roles: ["administrator", "customer_operator"] },
     { path: "/orders", label: "Заказы", roles: ["administrator", "customer_operator"] },
     { path: "/factory-orders", label: "Заказы завода", roles: ["administrator", "factory_operator"] },
     { path: "/marking", label: "Маркировка", roles: ["administrator", "factory_operator"] },
