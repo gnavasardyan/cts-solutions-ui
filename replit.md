@@ -6,6 +6,15 @@ This is a full-stack web application designed as a metal construction traceabili
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 2025)
+- Customer interface redesigned: removed "Панель управления" tab for customer operators
+- Added new customer dashboard with "Заказ" and "Заказы" tabs structure
+- "Заказ" tab shows simple order names/titles with "Заказ" button for creating new orders  
+- "Заказы" tab shows comprehensive order data table with full order details
+- Customer operators now default to orders page instead of dashboard on login
+- Fixed factory operator dashboard: added missing GET /api/factories/:id endpoint for factory name display
+- Created customer test account: customer@customer.io / PassWord123
+
 ## System Architecture
 
 ### Frontend Architecture

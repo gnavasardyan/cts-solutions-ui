@@ -9,7 +9,7 @@ export function TopNavigation() {
   const [location] = useLocation();
 
   const navItems = [
-    { path: "/", label: "Панель управления", roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master", "auditor"] },
+    { path: "/", label: "Панель управления", roles: ["administrator", "factory_operator", "warehouse_keeper", "site_master", "auditor"] },
     { path: "/catalog", label: "Каталог", roles: ["administrator", "customer_operator"] },
     { path: "/cart", label: "Корзина", roles: ["administrator", "customer_operator"] },
     { path: "/orders", label: "Заказы", roles: ["administrator", "customer_operator"] },

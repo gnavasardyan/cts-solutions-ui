@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 
@@ -22,6 +24,20 @@ import Orders from "@/pages/orders";
 import Factories from "@/pages/Factories";
 import FactoryOrders from "@/pages/FactoryOrders";
 import ProductionDashboard from "@/pages/ProductionDashboard";
+
+// Компонент для перенаправления заказчиков
+function CustomerRedirect() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (user?.role === 'customer_operator') {
+      setLocation('/orders');
+    }
+  }, [user, setLocation]);
+
+  return null;
+}
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -55,7 +71,12 @@ function Router() {
             <main className="overflow-auto w-full lg:ml-0">
               <div className="p-4 sm:p-6 w-full mobile-padding lg:p-6">
                 <Switch>
-                  <Route path="/" component={Dashboard} />
+                  <Route path="/" component={() => {
+                    if (user?.role === 'customer_operator') {
+                      return <Orders />;
+                    }
+                    return <Dashboard />;
+                  }} />
                   <Route path="/marking" component={Marking} />
                   <Route path="/scanning" component={Scanning} />
                   <Route path="/tracking" component={Tracking} />

@@ -24,7 +24,7 @@ export function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "customer_operator", "factory_operator", "warehouse_keeper", "site_master"] },
+    { path: "/", label: "Панель управления", icon: LayoutDashboard, roles: ["administrator", "factory_operator", "warehouse_keeper", "site_master"] },
     { path: "/catalog", label: "Каталог", icon: Package, roles: ["administrator", "customer_operator"] },
     { path: "/cart", label: "Корзина", icon: ShoppingCart, roles: ["administrator", "customer_operator"] },
     { path: "/orders", label: "Заказы", icon: FileText, roles: ["administrator", "customer_operator"] },
