@@ -39,6 +39,13 @@ const sendToFactorySchema = z.object({
 type SendToFactoryData = z.infer<typeof sendToFactorySchema>;
 
 const createOrderSchema = z.object({
+  title: z.string().min(1, "Введите название заказа"),
+  description: z.string().optional(),
+  constructionType: z.string().min(1, "Выберите тип конструкции"),
+  deliveryAddress: z.string().min(1, "Укажите адрес доставки"),
+  contactPerson: z.string().min(1, "Укажите контактное лицо"),
+  contactPhone: z.string().min(1, "Укажите контактный телефон"),
+  estimatedBudget: z.string().optional(),
   status: z.string().default("pending"),
   priority: z.string().default("normal"),
   deadline: z.string().optional(),
@@ -88,6 +95,13 @@ export default function OrdersPage() {
   const createOrderForm = useForm<CreateOrderData>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
+      title: "",
+      description: "",
+      constructionType: "",
+      deliveryAddress: "",
+      contactPerson: "",
+      contactPhone: "",
+      estimatedBudget: "",
       status: "pending",
       priority: "normal",
       deadline: "",
@@ -102,7 +116,12 @@ export default function OrdersPage() {
         status: data.status || "pending",
         priority: data.priority,
         deadline: data.deadline ? Math.floor(new Date(data.deadline).getTime() / 1000) : undefined,
-        notes: data.notes,
+        notes: `${data.title}${data.description ? ` - ${data.description}` : ''}
+Тип: ${data.constructionType}
+Адрес: ${data.deliveryAddress}
+Контакт: ${data.contactPerson} (${data.contactPhone})
+${data.estimatedBudget ? `Бюджет: ${data.estimatedBudget}` : ''}
+${data.notes ? `Примечания: ${data.notes}` : ''}`,
         totalAmount: data.totalAmount,
       });
     },
@@ -567,28 +586,161 @@ export default function OrdersPage() {
 
         {/* Create Order Dialog */}
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Создать новый заказ</DialogTitle>
               <DialogDescription>
-                Укажите приоритет и срок выполнения заказа
+                Заполните информацию о заказе металлоконструкций
               </DialogDescription>
             </DialogHeader>
             <Form {...createOrderForm}>
               <form onSubmit={createOrderForm.handleSubmit(handleCreateOrder)} className="space-y-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                    Создание заказа
-                  </h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    После создания заказа вы сможете добавить товары через каталог и отправить заказ на завод.
-                  </p>
-                </div>
+                <FormField
+                  control={createOrderForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Название заказа *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Введите название заказа" 
+                          {...field} 
+                          data-testid="input-order-title"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={createOrderForm.control}
-                  name="priority"
+                  name="constructionType"
                   render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Тип конструкции *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-construction-type">
+                            <SelectValue placeholder="Выберите тип конструкции" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Здание">Здание</SelectItem>
+                          <SelectItem value="Мост">Мост</SelectItem>
+                          <SelectItem value="Башня">Башня</SelectItem>
+                          <SelectItem value="Промышленная конструкция">Промышленная конструкция</SelectItem>
+                          <SelectItem value="Склад">Склад</SelectItem>
+                          <SelectItem value="Жилой комплекс">Жилой комплекс</SelectItem>
+                          <SelectItem value="Торговый центр">Торговый центр</SelectItem>
+                          <SelectItem value="Спортивное сооружение">Спортивное сооружение</SelectItem>
+                          <SelectItem value="Другое">Другое</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Описание проекта (необязательно)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Краткое описание проекта и особенности" 
+                          {...field} 
+                          data-testid="textarea-order-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={createOrderForm.control}
+                    name="deliveryAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Адрес доставки *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Укажите адрес доставки" 
+                            {...field} 
+                            data-testid="input-delivery-address"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createOrderForm.control}
+                    name="contactPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Контактное лицо *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="ФИО ответственного" 
+                            {...field} 
+                            data-testid="input-contact-person"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={createOrderForm.control}
+                    name="contactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Контактный телефон *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="+7 (___) ___-__-__" 
+                            {...field} 
+                            data-testid="input-contact-phone"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createOrderForm.control}
+                    name="estimatedBudget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Предполагаемый бюджет (необязательно)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="например: 1 000 000 руб." 
+                            {...field} 
+                            data-testid="input-estimated-budget"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={createOrderForm.control}
+                    name="priority"
+                    render={({ field }) => (
                     <FormItem>
                       <FormLabel>Приоритет</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
@@ -607,12 +759,12 @@ export default function OrdersPage() {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
-
-                <FormField
-                  control={createOrderForm.control}
-                  name="deadline"
-                  render={({ field }) => (
+                  />
+                  
+                  <FormField
+                    control={createOrderForm.control}
+                    name="deadline"
+                    render={({ field }) => (
                     <FormItem>
                       <FormLabel>Срок выполнения (необязательно)</FormLabel>
                       <FormControl>
@@ -626,6 +778,7 @@ export default function OrdersPage() {
                     </FormItem>
                   )}
                 />
+                </div>
 
                 <FormField
                   control={createOrderForm.control}
