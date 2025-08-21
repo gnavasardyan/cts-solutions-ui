@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,7 +59,7 @@ type CreateOrderData = z.infer<typeof createOrderSchema>;
 export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("order");
+
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -219,78 +219,13 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     });
   };
 
-  // Простой компонент с названиями заказов
-  const OrderNamesView = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Заказ</h2>
-        <Button 
-          onClick={() => setIsCreateOrderOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
-          data-testid="button-new-order"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Заказ
-        </Button>
-      </div>
-      
-      {isLoading ? (
-        <div className="space-y-2">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          ))}
-        </div>
-      ) : (orders as any[]).length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <ShoppingCart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Заказов пока нет
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Создайте первый заказ из каталога
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {(orders as any[]).map((order: any) => (
-            <Card key={order.id} className="p-4" data-testid={`order-name-${order.id}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">
-                    Заказ #{order.id.slice(-8).toUpperCase()}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(order.createdAt)}
-                  </div>
-                </div>
-                <Badge 
-                  variant={ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.variant || "secondary"}
-                >
-                  {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
-                </Badge>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+
 
   // Полная таблица заказов
   const OrdersTableView = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Заказы</h2>
-        <Button 
-          variant="outline" 
-          onClick={() => window.location.href = '/catalog'}
-          data-testid="button-back-catalog"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          К каталогу
-        </Button>
+        <h2 className="text-xl font-semibold">Все заказы</h2>
       </div>
       
       {isLoading ? (
@@ -563,29 +498,26 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   if (user?.role === 'customer_operator') {
     return (
       <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Личный кабинет заказчика
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Управление заказами и создание новых заявок
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Заказы
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Управление заказами и создание новых заявок
+            </p>
+          </div>
+          <Button 
+            onClick={() => setIsCreateOrderOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            data-testid="button-create-order"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Создать заказ
+          </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="order" data-testid="tab-order">Заказ</TabsTrigger>
-            <TabsTrigger value="orders" data-testid="tab-orders">Заказы</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="order" className="mt-6">
-            <OrderNamesView />
-          </TabsContent>
-          
-          <TabsContent value="orders" className="mt-6">
-            <OrdersTableView />
-          </TabsContent>
-        </Tabs>
+        <OrdersTableView />
 
         {/* Create Order Dialog */}
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
@@ -676,7 +608,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {factories?.map((factory: any) => (
+                          {Array.isArray(factories) && factories.map((factory: any) => (
                             <SelectItem key={factory.id} value={factory.id}>
                               {factory.name} - {factory.location}
                             </SelectItem>
