@@ -60,6 +60,9 @@ export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
+  // Debug dialog state
+  console.log('Dialog state:', { sendingOrderId, editingOrderId, isOpen: sendingOrderId !== null || editingOrderId !== null });
+
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -190,10 +193,12 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const openEditDialog = (order: any) => {
+    console.log('openEditDialog called with order:', order.id);
     setEditingOrderId(order.id);
     setSendingOrderId(null);
     // Pre-fill the form with current factory data
     const currentFactory = (factories as any[]).find((f: any) => f.id === order.factoryId);
+    console.log('Setting editingOrderId to:', order.id);
     form.reset({
       factoryId: order.factoryId || "",
       priority: order.priority || "normal",
