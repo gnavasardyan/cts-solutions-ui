@@ -42,6 +42,7 @@ const createOrderSchema = z.object({
   title: z.string().min(1, "Введите название заказа"),
   description: z.string().optional(),
   constructionType: z.string().min(1, "Выберите тип конструкции"),
+  factoryId: z.string().optional(),
   deliveryAddress: z.string().min(1, "Укажите адрес доставки"),
   contactPerson: z.string().min(1, "Укажите контактное лицо"),
   contactPhone: z.string().min(1, "Укажите контактный телефон"),
@@ -98,6 +99,7 @@ export default function OrdersPage() {
       title: "",
       description: "",
       constructionType: "",
+      factoryId: "",
       deliveryAddress: "",
       contactPerson: "",
       contactPhone: "",
@@ -115,6 +117,7 @@ export default function OrdersPage() {
       return await apiRequest("POST", "/api/orders", {
         status: data.status || "pending",
         priority: data.priority,
+        factoryId: data.factoryId || undefined,
         deadline: data.deadline ? Math.floor(new Date(data.deadline).getTime() / 1000) : undefined,
         notes: `${data.title}${data.description ? ` - ${data.description}` : ''}
 Тип: ${data.constructionType}
@@ -655,6 +658,32 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           data-testid="textarea-order-description"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="factoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Завод (необязательно)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-factory">
+                            <SelectValue placeholder="Выберите завод или оставьте пустым" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Не указан (выберем позже)</SelectItem>
+                          {factoriesQuery.data?.map((factory: any) => (
+                            <SelectItem key={factory.id} value={factory.id}>
+                              {factory.name} - {factory.location}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

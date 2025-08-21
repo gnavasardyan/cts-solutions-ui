@@ -14,6 +14,9 @@ Preferred communication style: Simple, everyday language.
 - Customer operators now default to orders page instead of dashboard on login
 - Fixed factory operator dashboard: added missing GET /api/factories/:id endpoint for factory name display
 - Created customer test account: customer@customer.io / PassWord123
+- Enhanced order creation form: replaced redirect to catalog with comprehensive pop-up modal
+- Added full order creation form with all parameters: title, construction type, factory selection, delivery address, contact info, budget, priority, deadline, notes
+- Factory selection integrated into order creation process with optional assignment
 
 ## System Architecture
 
