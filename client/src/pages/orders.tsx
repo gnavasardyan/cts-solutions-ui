@@ -99,7 +99,7 @@ export default function OrdersPage() {
       title: "",
       description: "",
       constructionType: "",
-      factoryId: "",
+      factoryId: "none",
       deliveryAddress: "",
       contactPerson: "",
       contactPhone: "",
@@ -117,7 +117,7 @@ export default function OrdersPage() {
       return await apiRequest("POST", "/api/orders", {
         status: data.status || "pending",
         priority: data.priority,
-        factoryId: data.factoryId || undefined,
+        factoryId: data.factoryId === "none" ? undefined : data.factoryId,
         deadline: data.deadline ? Math.floor(new Date(data.deadline).getTime() / 1000) : undefined,
         notes: `${data.title}${data.description ? ` - ${data.description}` : ''}
 Тип: ${data.constructionType}
@@ -676,7 +676,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Не указан (выберем позже)</SelectItem>
+                          <SelectItem value="none">Не указан (выберем позже)</SelectItem>
                           {factories?.map((factory: any) => (
                             <SelectItem key={factory.id} value={factory.id}>
                               {factory.name} - {factory.location}
