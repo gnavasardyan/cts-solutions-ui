@@ -68,7 +68,14 @@ export default function OrdersPage() {
   // Check if user can edit factory (admin or order owner)
   const canEditFactory = (order: any) => {
     if (!user) return false;
-    return user.role === 'administrator' || order.customerId === user.id;
+    console.log('canEditFactory check:', {
+      userRole: user.role,
+      userId: user.id,
+      orderCustomerId: order.customerId,
+      orderUserId: order.userId,
+      canEdit: user.role === 'administrator' || order.customerId === user.id || order.userId === user.id
+    });
+    return user.role === 'administrator' || order.customerId === user.id || order.userId === user.id;
   };
 
   // Fetch orders
