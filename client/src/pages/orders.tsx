@@ -677,7 +677,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="">Не указан (выберем позже)</SelectItem>
-                          {factoriesQuery.data?.map((factory: any) => (
+                          {factories?.map((factory: any) => (
                             <SelectItem key={factory.id} value={factory.id}>
                               {factory.name} - {factory.location}
                             </SelectItem>
