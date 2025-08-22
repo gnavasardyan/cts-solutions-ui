@@ -322,7 +322,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     const addressMatch = notes.match(/Адрес: ([^\n]+)/);
     const contactMatch = notes.match(/Контакт: ([^(]+) \(([^)]+)\)/);
     const budgetMatch = notes.match(/Бюджет: ([^\n]+)/);
-    const notesMatch = notes.match(/Примечания: (.+)/s);
+    const notesMatch = notes.match(/Примечания: ([\s\S]+)/);
     
     createOrderForm.reset({
       title: titleMatch ? titleMatch[1].trim() : "",
