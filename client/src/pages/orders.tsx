@@ -692,18 +692,7 @@ export default function OrdersPage() {
                         <SelectContent>
                           {Object.keys(CONSTRUCTION_DOCS).map(type => (
                             <SelectItem key={type} value={type}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{type}</span>
-                                <a 
-                                  href={CONSTRUCTION_DOCS[type as keyof typeof CONSTRUCTION_DOCS]}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 text-xs underline ml-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  документация
-                                </a>
-                              </div>
+                              {type}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -712,6 +701,25 @@ export default function OrdersPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Документация по выбранному типу конструкции */}
+                {createOrderForm.watch("constructionType") && CONSTRUCTION_DOCS[createOrderForm.watch("constructionType") as keyof typeof CONSTRUCTION_DOCS] && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-blue-800 dark:text-blue-200">Документация по типу конструкции:</span>
+                      <a 
+                        href={CONSTRUCTION_DOCS[createOrderForm.watch("constructionType") as keyof typeof CONSTRUCTION_DOCS]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline font-medium"
+                        data-testid={`link-construction-docs-${createOrderForm.watch("constructionType")}`}
+                      >
+                        {createOrderForm.watch("constructionType")} - Техническая документация
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 <FormField
                   control={createOrderForm.control}
@@ -1277,18 +1285,7 @@ export default function OrdersPage() {
                         <SelectContent>
                           {Object.keys(CONSTRUCTION_DOCS).map(type => (
                             <SelectItem key={type} value={type}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{type}</span>
-                                <a 
-                                  href={CONSTRUCTION_DOCS[type as keyof typeof CONSTRUCTION_DOCS]}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 text-xs underline ml-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  документация
-                                </a>
-                              </div>
+                              {type}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1297,6 +1294,25 @@ export default function OrdersPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Документация по выбранному типу конструкции */}
+                {createOrderForm.watch("constructionType") && CONSTRUCTION_DOCS[createOrderForm.watch("constructionType") as keyof typeof CONSTRUCTION_DOCS] && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-blue-800 dark:text-blue-200">Документация по типу конструкции:</span>
+                      <a 
+                        href={CONSTRUCTION_DOCS[createOrderForm.watch("constructionType") as keyof typeof CONSTRUCTION_DOCS]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline font-medium"
+                        data-testid={`link-construction-docs-${createOrderForm.watch("constructionType")}`}
+                      >
+                        {createOrderForm.watch("constructionType")} - Техническая документация
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 <FormField
                   control={createOrderForm.control}
