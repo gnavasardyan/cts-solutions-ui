@@ -222,7 +222,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      setSendingOrderId(null);
+
       setEditingOrderId(null);
       form.reset();
       toast({ description: editingOrderId ? "Завод изменён" : "Заказ отправлен на завод" });
@@ -308,7 +308,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
   const openEditDialog = (order: any) => {
     setEditingOrderId(order.id);
-    setSendingOrderId(null);
     // Pre-fill the form with current factory data
     const currentFactory = (factories as any[]).find((f: any) => f.id === order.factoryId);
     form.reset({
@@ -1133,7 +1132,185 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
           </div>
         )}
 
-        {/* Create Order Dialog для заказчиков - уже определен выше */}
+        {/* Create Order Dialog для заказчиков */}
+        <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
+              <DialogDescription>
+                {editingOrderId 
+                  ? "Внесите изменения в информацию о заказе" 
+                  : "Заполните информацию о заказе металлоконструкций"
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...createOrderForm}>
+              <form onSubmit={createOrderForm.handleSubmit(handleCreateOrder)} className="space-y-4">
+                <FormField
+                  control={createOrderForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Название заказа *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Введите название заказа" 
+                          {...field} 
+                          data-testid="input-order-title"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="constructionType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Тип конструкции *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-construction-type">
+                            <SelectValue placeholder="Выберите тип конструкции" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Здание">Здание</SelectItem>
+                          <SelectItem value="Мост">Мост</SelectItem>
+                          <SelectItem value="Башня">Башня</SelectItem>
+                          <SelectItem value="Промышленная конструкция">Промышленная конструкция</SelectItem>
+                          <SelectItem value="Склад">Склад</SelectItem>
+                          <SelectItem value="Жилой комплекс">Жилой комплекс</SelectItem>
+                          <SelectItem value="Торговый центр">Торговый центр</SelectItem>
+                          <SelectItem value="Спортивное сооружение">Спортивное сооружение</SelectItem>
+                          <SelectItem value="Другое">Другое</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="deliveryAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Адрес доставки *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Укажите адрес доставки" 
+                          {...field} 
+                          data-testid="input-delivery-address"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={createOrderForm.control}
+                    name="contactPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Контактное лицо *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Имя и должность" 
+                            {...field} 
+                            data-testid="input-contact-person"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={createOrderForm.control}
+                    name="contactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Контактный телефон *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="+7 (000) 000-00-00" 
+                            {...field} 
+                            data-testid="input-contact-phone"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="deadline"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Срок выполнения</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          data-testid="input-deadline"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Примечания (необязательно)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Дополнительные требования или комментарии" 
+                          {...field} 
+                          data-testid="textarea-order-notes"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsCreateOrderOpen(false)}
+                    data-testid="button-cancel-order"
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createOrderMutation.isPending}
+                    data-testid="button-submit-order"
+                  >
+                    {createOrderMutation.isPending 
+                      ? "Создание..." 
+                      : editingOrderId 
+                        ? "Сохранить изменения" 
+                        : "Создать заказ"
+                    }
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
