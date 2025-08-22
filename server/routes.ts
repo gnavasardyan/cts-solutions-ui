@@ -409,8 +409,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (order.customerId !== req.user.id) {
           return res.status(403).json({ message: "Access denied" });
         }
-        if (order.status !== 'draft') {
-          return res.status(403).json({ message: "Can only update draft orders" });
+        if (order.status !== 'draft' && order.status !== 'pending') {
+          return res.status(403).json({ message: "Can only update draft or pending orders" });
         }
       } else if (![UserRoles.ADMINISTRATOR].includes(req.user?.role)) {
         return res.status(403).json({ message: "Access denied" });

@@ -288,7 +288,12 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   const openSendDialog = (orderId: string) => {
     setSendingOrderId(orderId);
     setEditingOrderId(null);
-    form.reset();
+    form.reset({
+      factoryId: "",
+      priority: "normal",
+      deadline: "",
+      notes: "",
+    });
   };
 
   const openEditDialog = (order: any) => {
@@ -453,6 +458,19 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           >
                             <Send className="h-3 w-3 mr-1" />
                             Отправить
+                          </Button>
+                        )}
+                        {/* Send to Factory for customers after editing */}
+                        {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'draft') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openSendDialog(order.id)}
+                            className="h-6 px-2 text-xs text-green-600"
+                            data-testid={`button-send-to-factory-${order.id}`}
+                          >
+                            <Factory className="h-3 w-3 mr-1" />
+                            На завод
                           </Button>
                         )}
                       </div>
@@ -1304,17 +1322,12 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       )}
 
       {/* Send to Factory Dialog */}
-      <Dialog open={sendingOrderId !== null || editingOrderId !== null} onOpenChange={closeSendDialog}>
+      <Dialog open={sendingOrderId !== null} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingOrderId ? "Изменить завод" : "Отправить заказ на завод"}
-            </DialogTitle>
+            <DialogTitle>Отправить заказ на завод</DialogTitle>
             <DialogDescription>
-              {editingOrderId 
-                ? "Измените завод и параметры производства"
-                : "Выберите завод и укажите параметры для производства"
-              }
+              Выберите завод и укажите параметры для производства
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -1419,10 +1432,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   disabled={sendToFactoryMutation.isPending}
                   data-testid="button-submit-send-to-factory"
                 >
-                  {sendToFactoryMutation.isPending 
-                    ? (editingOrderId ? "Сохранение..." : "Отправка...") 
-                    : (editingOrderId ? "Сохранить изменения" : "Отправить")
-                  }
+                  {sendToFactoryMutation.isPending ? "Отправка..." : "Отправить на завод"}
                 </Button>
               </div>
             </form>
