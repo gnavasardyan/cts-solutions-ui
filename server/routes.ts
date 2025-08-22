@@ -383,13 +383,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check permissions based on user role and status change
       if (req.user?.role === UserRoles.CUSTOMER_OPERATOR) {
-        // Customer operators can only change draft to pending
         const order = await storage.getOrderById(orderId);
         if (!order) {
           return res.status(404).json({ message: "Order not found" });
         }
-        if (order.status !== 'draft' || status !== 'pending') {
-          return res.status(403).json({ message: "Customer operators can only submit draft orders" });
+        if (order.customerId !== req.user.id) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+        // Allow customers to submit drafts or send orders to factory
+        if (!((order.status === 'draft' && status === 'pending') || 
+              (['draft', 'pending', 'confirmed'].includes(order.status) && status === 'sent_to_factory'))) {
+          return res.status(403).json({ message: "Invalid status transition" });
         }
       } else if (![UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR].includes(req.user?.role)) {
         return res.status(403).json({ message: "Access denied" });
