@@ -209,7 +209,24 @@ export default function OrdersPage() {
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, orderData }: { orderId: string, orderData: any }) => {
-      return await apiRequest("PATCH", `/api/orders/${orderId}`, orderData);
+      // Format data the same way as in createOrderMutation
+      const formattedData = {
+        status: orderData.status || "pending",
+        priority: orderData.priority,
+        factoryId: orderData.factoryId,
+        deadline: orderData.deadline ? Math.floor(new Date(orderData.deadline).getTime() / 1000) : undefined,
+        notes: [
+          `${orderData.title}${orderData.description ? ` - ${orderData.description}` : ''}`,
+          `Тип: ${orderData.constructionType}`,
+          `Адрес: ${orderData.deliveryAddress}`,
+          `Контакт: ${orderData.contactPerson} (${orderData.contactPhone})`,
+          orderData.estimatedBudget ? `Бюджет: ${orderData.estimatedBudget}` : '',
+          orderData.notes ? `Примечания: ${orderData.notes}` : ''
+        ].filter(Boolean).join('\n'),
+        totalAmount: orderData.totalAmount,
+        items: orderData.items || [],
+      };
+      return await apiRequest("PATCH", `/api/orders/${orderId}`, formattedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
