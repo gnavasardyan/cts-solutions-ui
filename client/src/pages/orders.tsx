@@ -1051,38 +1051,43 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Order Items */}
-                    {order.items && order.items.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-medium mb-2 flex items-center gap-2">
-                          <Package className="h-4 w-4 text-gray-400" />
-                          Состав заказа
-                        </h4>
-                        <div className="space-y-2">
-                          {order.items.map((item: any, index: number) => (
-                            <div 
-                              key={index} 
-                              className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded"
-                              data-testid={`order-item-${index}`}
-                            >
-                              <div>
-                                <div className="font-medium text-sm">{item.product.name}</div>
-                                {item.product.description && (
-                                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                    {item.product.description}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <div className="text-sm font-medium">
-                                  {item.quantity} шт
+                    {/* Order Items - всегда показываем раздел */}
+                    <div className="mb-4">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Package className="h-4 w-4 text-gray-400" />
+                        Состав заказа
+                      </h4>
+                      <div className="space-y-2">
+                        {order.items && order.items.length > 0 ? order.items.map((item: any, index: number) => (
+                          <div 
+                            key={index} 
+                            className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                            data-testid={`order-item-${index}`}
+                          >
+                            <div>
+                              <div className="font-medium text-sm">{item.product.name}</div>
+                              {item.product.description && (
+                                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                  {item.product.description}
                                 </div>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium">
+                                {item.quantity} шт
                               </div>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        )) : (
+                          <div className="text-sm text-gray-500 dark:text-gray-400 italic p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            {order.status === 'draft' ? 
+                              'Состав заказа будет добавлен при оформлении' : 
+                              'Состав заказа не указан'
+                            }
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       {order.constructionType && (
