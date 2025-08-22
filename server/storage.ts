@@ -92,6 +92,7 @@ export interface IStorage {
   createOrderItems(orderId: string, items: any[]): Promise<void>;
   deleteOrderItems(orderId: string): Promise<void>;
   updateOrderStatus(id: string, status: string): Promise<void>;
+  sendOrderToFactory(orderId: string, factoryData: any): Promise<Order | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -525,6 +526,28 @@ export class DatabaseStorage implements IStorage {
         updatedAt: Math.floor(Date.now() / 1000),
       })
       .where(eq(orders.id, id));
+  }
+
+  async sendOrderToFactory(orderId: string, factoryData: any): Promise<Order | undefined> {
+    const updateData: Partial<InsertOrder> = {
+      factoryId: factoryData.factoryId,
+      priority: factoryData.priority || 'normal',
+      status: factoryData.status || 'sent_to_factory',
+      notes: factoryData.notes,
+      updatedAt: Math.floor(Date.now() / 1000),
+    };
+
+    if (factoryData.deadline) {
+      updateData.deadline = Math.floor(new Date(factoryData.deadline).getTime() / 1000);
+    }
+
+    const [updatedOrder] = await db
+      .update(orders)
+      .set(updateData)
+      .where(eq(orders.id, orderId))
+      .returning();
+    
+    return updatedOrder;
   }
 
   // Factory operations
