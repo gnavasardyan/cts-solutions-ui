@@ -298,14 +298,24 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
   const openSendToFactoryDialog = (orderId: string) => {
     console.log('Opening send to factory dialog for order:', orderId);
-    setSendingOrderId(orderId);
+    console.log('Current sendingOrderId before:', sendingOrderId);
+    console.log('Current isCreateOrderOpen before:', isCreateOrderOpen);
+    
+    // Close any open dialogs first
+    setIsCreateOrderOpen(false);
     setEditingOrderId(null);
-    form.reset({
-      factoryId: "",
-      priority: "normal",
-      deadline: "",
-      notes: "",
-    });
+    
+    // Then open send to factory dialog
+    setTimeout(() => {
+      setSendingOrderId(orderId);
+      form.reset({
+        factoryId: "",
+        priority: "normal",
+        deadline: "",
+        notes: "",
+      });
+      console.log('Dialog should be open now, sendingOrderId:', orderId);
+    }, 100);
   };
 
   const openEditDialog = (order: any) => {
@@ -1345,7 +1355,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       )}
 
       {/* Send to Factory Dialog */}
-      <Dialog open={sendingOrderId !== null} onOpenChange={closeSendDialog}>
+      <Dialog open={!!sendingOrderId && !isCreateOrderOpen} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Отправить заказ на завод</DialogTitle>
