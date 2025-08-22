@@ -460,19 +460,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                             Отправить
                           </Button>
                         )}
-                        {/* Send to Factory for customers after editing */}
-                        {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'draft') && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openSendDialog(order.id)}
-                            className="h-6 px-2 text-xs text-green-600"
-                            data-testid={`button-send-to-factory-${order.id}`}
-                          >
-                            <Factory className="h-3 w-3 mr-1" />
-                            На завод
-                          </Button>
-                        )}
                       </div>
                     )}
                     </div>
@@ -1292,19 +1279,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   </div>
                 </div>
 
-                {/* Send to Factory Button */}
-                {(order.status === "pending" || order.status === "confirmed") && canEditFactory(order) && (
-                  <div className="mt-4 pt-4 border-t">
-                    <Button
-                      onClick={() => openSendDialog(order.id)}
-                      className="w-full"
-                      data-testid={`button-send-to-factory-${order.id}`}
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Отправить на завод
-                    </Button>
-                  </div>
-                )}
+
 
                 {/* Admin info */}
                 {user?.role === 'administrator' && order.customerId !== user.id && (
