@@ -62,7 +62,7 @@ export default function OrdersPage() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<{[key: string]: number}>({});
-  const [isSendToFactoryOpen, setIsSendToFactoryOpen] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -279,10 +279,27 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     }
   };
 
-  const handleSendToFactory = (data: SendToFactoryData) => {
-    const orderId = sendingOrderId || editingOrderId;
-    if (orderId) {
-      sendToFactoryMutation.mutate({ orderId, formData: data });
+  const handleSendToFactory = async (data: SendToFactoryData) => {
+    if (!sendingOrderId) return;
+
+    try {
+      console.log('Sending order to factory:', sendingOrderId, data);
+      await apiRequest("PATCH", `/api/orders/${sendingOrderId}/send-to-factory`, data);
+      
+      toast({
+        title: "Успешно",
+        description: "Заказ отправлен на завод",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      closeSendDialog();
+    } catch (error) {
+      console.error('Error sending to factory:', error);
+      toast({
+        title: "Ошибка", 
+        description: "Не удалось отправить заказ на завод",
+        variant: "destructive",
+      });
     }
   };
 
@@ -299,17 +316,22 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
   const openSendToFactoryDialog = (orderId: string) => {
     console.log('Opening send to factory dialog for order:', orderId);
-    setSendingOrderId(orderId);
-    setIsSendToFactoryOpen(true);
+    // Close all other dialogs
     setIsCreateOrderOpen(false);
     setEditingOrderId(null);
+    
+    // Set the order and show dialog
+    setSendingOrderId(orderId);
+    setShowSendDialog(true);
+    
+    // Reset form
     form.reset({
       factoryId: "",
       priority: "normal",
       deadline: "",
       notes: "",
     });
-    console.log('isSendToFactoryOpen set to true');
+    console.log('Send dialog opened for order:', orderId);
   };
 
   const openEditDialog = (order: any) => {
@@ -326,9 +348,8 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const closeSendDialog = () => {
+    setShowSendDialog(false);
     setSendingOrderId(null);
-    setEditingOrderId(null);
-    setIsSendToFactoryOpen(false);
     form.reset();
   };
 
@@ -1350,7 +1371,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       )}
 
       {/* Send to Factory Dialog */}
-      <Dialog open={isSendToFactoryOpen} onOpenChange={closeSendDialog}>
+      <Dialog open={showSendDialog} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Отправить заказ на завод</DialogTitle>
