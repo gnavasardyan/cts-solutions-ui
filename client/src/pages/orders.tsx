@@ -170,7 +170,7 @@ export default function OrdersPage() {
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: async (data: CreateOrderData) => {
+    mutationFn: async (data: any) => {
       return await apiRequest("POST", "/api/orders", {
         status: data.status || "pending",
         priority: data.priority,
@@ -185,6 +185,7 @@ export default function OrdersPage() {
           data.notes ? `Примечания: ${data.notes}` : ''
         ].filter(Boolean).join('\n'),
         totalAmount: data.totalAmount,
+        items: data.items || [], // Добавляем товары
       });
     },
     onSuccess: () => {
