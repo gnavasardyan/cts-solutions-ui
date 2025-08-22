@@ -1104,10 +1104,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setEditingOrderId(order.id);
-                            setIsCreateOrderOpen(true);
-                          }}
+                          onClick={() => openOrderEditDialog(order)}
                           data-testid={`button-edit-${order.id}`}
                         >
                           <Edit2 className="h-4 w-4 mr-2" />
@@ -1115,7 +1112,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </Button>
                       )}
                       
-                      {order.status === 'confirmed' && !order.factoryId && (
+                      {(order.status === 'confirmed' || order.status === 'draft') && !order.factoryId && (
                         <Button
                           onClick={() => sendOrderToFactory(order.id)}
                           data-testid={`button-send-factory-${order.id}`}
