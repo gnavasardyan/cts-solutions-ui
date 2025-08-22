@@ -92,10 +92,7 @@ export default function OrdersPage() {
   // Handle status change
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      await apiRequest(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus })
-      });
+      await apiRequest("PATCH", `/api/orders/${orderId}/status`, { status: newStatus });
       
       toast({
         title: "Успешно",
@@ -317,19 +314,40 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   const openOrderEditDialog = (order: any) => {
     setEditingOrderId(order.id);
     
+    // Parse order data from notes field (where it's stored)
+    const notes = order.notes || "";
+    const titleMatch = notes.match(/^([^-\n]+)/);
+    const descMatch = notes.match(/ - ([^\n]+)/);
+    const typeMatch = notes.match(/Тип: ([^\n]+)/);
+    const addressMatch = notes.match(/Адрес: ([^\n]+)/);
+    const contactMatch = notes.match(/Контакт: ([^(]+) \(([^)]+)\)/);
+    const budgetMatch = notes.match(/Бюджет: ([^\n]+)/);
+    const notesMatch = notes.match(/Примечания: (.+)/s);
+    
     createOrderForm.reset({
-      title: order.title || "",
-      description: order.description || "",
-      constructionType: order.constructionType || "",
+      title: titleMatch ? titleMatch[1].trim() : "",
+      description: descMatch ? descMatch[1].trim() : "",
+      constructionType: typeMatch ? typeMatch[1] : "",
       factoryId: order.factoryId || "",
-      deliveryAddress: order.deliveryAddress || "",
-      contactPerson: order.contactPerson || "",
-      contactPhone: order.contactPhone || "",
-      estimatedBudget: order.estimatedBudget || "",
+      deliveryAddress: addressMatch ? addressMatch[1] : "",
+      contactPerson: contactMatch ? contactMatch[1].trim() : "",
+      contactPhone: contactMatch ? contactMatch[2] : "",
+      estimatedBudget: budgetMatch ? budgetMatch[1] : "",
       priority: order.priority || "normal",
       deadline: order.deadline ? new Date(order.deadline * 1000).toISOString().split('T')[0] : "",
-      notes: order.notes || ""
+      notes: notesMatch ? notesMatch[1].trim() : ""
     });
+    
+    // Load existing order items into selectedProducts
+    if (order.items && order.items.length > 0) {
+      const selectedItems: Record<string, number> = {};
+      order.items.forEach((item: any) => {
+        selectedItems[item.productId] = item.quantity;
+      });
+      setSelectedProducts(selectedItems);
+    } else {
+      setSelectedProducts({});
+    }
     
     setIsCreateOrderOpen(true);
   };
