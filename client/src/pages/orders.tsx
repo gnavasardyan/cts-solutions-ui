@@ -402,6 +402,11 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+      minimumFractionDigits: 0,
+    }).format(price);
   };
 
   const formatDate = (timestamp: number) => {
@@ -570,6 +575,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           data-testid={`button-edit-factory-${order.id}`}
                         >
                           <Edit2 className="h-3 w-3 mr-1" />
+                        </Button>
                       )}
                     </div>
                     {(() => {
@@ -624,6 +630,13 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
+            <DialogTitle>
+              {editingOrderId 
+                ? "Редактирование заказа" 
+                : "Создание заказа"
+              }
+            </DialogTitle>
+            <DialogDescription>
               {editingOrderId 
                 ? "Внесите изменения в информацию о заказе" 
                 : "Заполните информацию о заказе металлоконструкций"
@@ -959,8 +972,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
             </Form>
           </DialogContent>
         </Dialog>
-
-        {/* Dialog для создания заказов - используется всеми ролями */}
       </div>
     );
 
@@ -1179,6 +1190,13 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
+              <DialogTitle>
+                {editingOrderId 
+                  ? "Редактирование заказа" 
+                  : "Создание нового заказа"
+                }
+              </DialogTitle>
+              <DialogDescription>
                 {editingOrderId 
                   ? "Внесите изменения в информацию о заказе" 
                   : "Заполните информацию о заказе металлоконструкций"
@@ -1672,6 +1690,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           data-testid={`button-edit-factory-${order.id}`}
                         >
                           <Edit2 className="h-3 w-3 mr-1" />
+                        </Button>
                       )}
                     </div>
                     {(() => {
@@ -1814,6 +1833,8 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
+            <DialogTitle>Создание заказа (Администратор)</DialogTitle>
+            <DialogDescription>
               Выберите завод и укажите параметры для производства
             </DialogDescription>
           </DialogHeader>
