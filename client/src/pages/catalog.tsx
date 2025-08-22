@@ -39,7 +39,6 @@ export default function CatalogPage() {
     name: "",
     description: "",
     category: "beam",
-    price: "",
     weight: "",
     dimensions: "",
     gost: "",
@@ -99,7 +98,7 @@ export default function CatalogPage() {
     mutationFn: async (productData: any) => {
       return apiRequest("POST", "/api/products", {
         ...productData,
-        price: parseFloat(productData.price),
+
         weight: productData.weight ? parseFloat(productData.weight) : null,
         inStock: parseInt(productData.inStock),
       });
@@ -127,7 +126,7 @@ export default function CatalogPage() {
     mutationFn: async ({ id, ...productData }: any) => {
       return apiRequest("PATCH", `/api/products/${id}`, {
         ...productData,
-        price: parseFloat(productData.price),
+
         weight: productData.weight ? parseFloat(productData.weight) : null,
         inStock: parseInt(productData.inStock),
       });
@@ -180,7 +179,6 @@ export default function CatalogPage() {
       name: "",
       description: "",
       category: "beam",
-      price: "",
       weight: "",
       dimensions: "",
       gost: "",
@@ -194,7 +192,6 @@ export default function CatalogPage() {
       name: product.name,
       description: product.description || "",
       category: product.category,
-      price: product.price.toString(),
       weight: product.weight?.toString() ?? "",
       dimensions: product.dimensions ?? "",
       gost: product.gost || "",
@@ -213,13 +210,6 @@ export default function CatalogPage() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
   const formatWeight = (weight: number | null) => {
     if (!weight) return 'Не указан';
@@ -315,18 +305,7 @@ export default function CatalogPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="price">Цена (руб.) *</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        value={productForm.price}
-                        onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
-                        required
-                        data-testid="input-product-price"
-                      />
-                    </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="weight">Вес (кг)</Label>
                       <Input
@@ -514,9 +493,6 @@ export default function CatalogPage() {
 
                 <div className="flex justify-between items-center pt-2 border-t">
                   <div className="flex flex-col">
-                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {formatPrice(product.price)}
-                    </span>
                     <span className="text-xs text-gray-500">
                       <Package className="h-3 w-3 inline mr-1" />
                       В наличии: {product.inStock} шт.
@@ -624,18 +600,7 @@ export default function CatalogPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="edit-price">Цена (руб.) *</Label>
-                  <Input
-                    id="edit-price"
-                    type="number"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
-                    required
-                    data-testid="input-edit-product-price"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-weight">Вес (кг)</Label>
                   <Input

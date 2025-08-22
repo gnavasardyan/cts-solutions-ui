@@ -86,8 +86,8 @@ export default function CartPage() {
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async () => {
-      const totalAmount = (cartItems as any[]).reduce((total: number, item: any) => 
-        total + (item.product.price * item.quantity), 0
+      const totalQuantity = (cartItems as any[]).reduce((total: number, item: any) => 
+        total + item.quantity, 0
       );
       
       const response = await fetch('/api/orders', {
@@ -97,7 +97,7 @@ export default function CartPage() {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify({
-          totalAmount,
+          totalQuantity,
           notes: orderNotes,
           status: 'pending'
         }),
@@ -149,17 +149,7 @@ export default function CartPage() {
     createOrderMutation.mutate();
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
-  const totalAmount = (cartItems as any[]).reduce((total: number, item: any) => 
-    total + (item.product.price * item.quantity), 0
-  );
 
   const totalItems = (cartItems as any[]).reduce((total: number, item: any) => total + item.quantity, 0);
 
@@ -178,7 +168,7 @@ export default function CartPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Корзина</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {totalItems > 0 ? `${totalItems} товаров на сумму ${formatPrice(totalAmount)}` : 'Корзина пуста'}
+            {totalItems > 0 ? `${totalItems} товаров` : 'Корзина пуста'}
           </p>
         </div>
       </div>
@@ -241,11 +231,8 @@ export default function CartPage() {
                     </div>
                     
                     <div className="flex flex-col items-end gap-2">
-                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </div>
                       <div className="text-sm text-gray-500">
-                        {formatPrice(item.product.price)} за шт.
+                        Количество: {item.quantity} шт.
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -299,12 +286,6 @@ export default function CartPage() {
                   <div className="flex justify-between text-sm">
                     <span>Товаров:</span>
                     <span>{totalItems} шт.</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold border-t pt-2">
-                    <span>Итого:</span>
-                    <span className="text-blue-600 dark:text-blue-400">
-                      {formatPrice(totalAmount)}
-                    </span>
                   </div>
                 </div>
 

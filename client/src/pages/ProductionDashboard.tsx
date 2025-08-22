@@ -47,7 +47,6 @@ interface ProductionOrder {
     id: string;
     productId: string;
     quantity: number;
-    price: number;
     specifications?: string;
     status: string;
     product: {
@@ -559,9 +558,6 @@ export default function ProductionDashboard() {
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">
-                            {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
-                          </div>
                           {item.status === "ready_for_marking" && (
                             <Button 
                               size="sm" 
@@ -594,13 +590,6 @@ export default function ProductionDashboard() {
                 </div>
               </div>
 
-              {/* Total Amount */}
-              <div className="flex justify-between items-center border-t pt-2">
-                <span className="font-medium">Общая сумма:</span>
-                <span className="text-lg font-bold">
-                  {order.totalAmount.toLocaleString("ru-RU")} ₽
-                </span>
-              </div>
 
               {/* Production Actions */}
               <div className="flex justify-between items-center">

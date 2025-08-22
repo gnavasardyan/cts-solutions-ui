@@ -280,8 +280,7 @@ export default function OrdersPage() {
 
   const calculateOrderTotal = () => {
     return Object.entries(selectedProducts).reduce((total, [productId, quantity]) => {
-      const product = (products as any[]).find(p => p.id === productId);
-      return total + (product ? product.price * quantity : 0);
+      return total + quantity;
     }, 0);
   };
 
@@ -292,7 +291,7 @@ export default function OrdersPage() {
       return {
         productId,
         quantity,
-        price: product?.price || 0
+        price: 0
       };
     });
     
@@ -446,13 +445,6 @@ export default function OrdersPage() {
     setIsCreateOrderOpen(true);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString('ru-RU', {
