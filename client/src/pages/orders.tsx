@@ -588,113 +588,16 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   </div>
                 )}
 
-                {/* Send to Factory Actions */}
-                {order.status === 'confirmed' && !order.factoryId && canEditFactory(order) && (
-                  <div className="flex justify-end">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          onClick={() => openSendDialog(order.id)}
-                          data-testid={`button-send-to-factory-${order.id}`}
-                        >
-                          <Send className="h-4 w-4 mr-2" />
-                          Отправить на завод
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Отправить заказ на завод</DialogTitle>
-                          <DialogDescription>
-                            Выберите завод для производства заказа #{order.id.slice(-8).toUpperCase()}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <Form {...form}>
-                          <form onSubmit={form.handleSubmit(handleSendToFactory)} className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="factoryId"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Завод</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger data-testid="select-factory">
-                                        <SelectValue placeholder="Выберите завод" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {(factories as any[]).map((factory: any) => (
-                                        <SelectItem key={factory.id} value={factory.id}>
-                                          {factory.name} - {factory.location}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="priority"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Приоритет</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="low">Низкий</SelectItem>
-                                      <SelectItem value="normal">Обычный</SelectItem>
-                                      <SelectItem value="high">Высокий</SelectItem>
-                                      <SelectItem value="urgent">Срочный</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="deadline"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Срок выполнения</FormLabel>
-                                  <FormControl>
-                                    <Input type="date" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="notes"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Примечания</FormLabel>
-                                  <FormControl>
-                                    <Textarea {...field} placeholder="Дополнительные требования к заказу" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <div className="flex gap-2 justify-end">
-                              <Button type="button" variant="outline" onClick={closeSendDialog}>
-                                Отмена
-                              </Button>
-                              <Button type="submit" disabled={sendToFactoryMutation.isPending}>
-                                {sendToFactoryMutation.isPending ? "Отправка..." : "Отправить"}
-                              </Button>
-                            </div>
-                          </form>
-                        </Form>
-                      </DialogContent>
-                    </Dialog>
+                {/* Admin can send orders to factory directly via status change button */}
+                {user?.role === 'administrator' && order.status === 'confirmed' && !order.factoryId && (
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      onClick={() => sendOrderToFactory(order.id)}
+                      data-testid={`button-admin-send-to-factory-${order.id}`}
+                    >
+                      <Factory className="h-4 w-4 mr-2" />
+                      Отправить на завод
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -702,48 +605,19 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
           ))}
         </div>
       )}
-    </div>
-  );
 
-  // Основной интерфейс заказчика
-  if (user?.role === 'customer_operator') {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Заказы
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Управление заказами и создание новых заявок
-            </p>
-          </div>
-          <Button 
-            onClick={() => setIsCreateOrderOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            data-testid="button-create-order"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Создать заказ
-          </Button>
-        </div>
-
-        <OrdersTableView />
-
-        {/* Create Order Dialog */}
-        <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingOrderId ? "Редактировать заказ" : "Создать новый заказ"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingOrderId 
-                  ? "Внесите изменения в информацию о заказе" 
-                  : "Заполните информацию о заказе металлоконструкций"
-                }
-              </DialogDescription>
-            </DialogHeader>
+      {/* Create Order Dialog */}
+      <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
+            <DialogDescription>
+              {editingOrderId 
+                ? "Внесите изменения в информацию о заказе" 
+                : "Заполните информацию о заказе металлоконструкций"
+              }
+            </DialogDescription>
+          </DialogHeader>
             <Form {...createOrderForm}>
               <form onSubmit={createOrderForm.handleSubmit(handleCreateOrder)} className="space-y-4">
                 <FormField
@@ -1073,13 +947,115 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
             </Form>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog для создания заказов - используется всеми ролями */}
+      </div>
+    );
+
+  // Интерфейс заказчика
+  if (user?.role === 'customer_operator') {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Заказы
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Управление заказами и создание новых заявок
+            </p>
+          </div>
+          <Button 
+            onClick={() => setIsCreateOrderOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            data-testid="button-create-order"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Создать заказ
+          </Button>
+        </div>
+
+        {/* Orders Table View for Customer */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold mb-4">Мои заказы</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Номер заказа</TableHead>
+                  <TableHead>Название</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Завод</TableHead>
+                  <TableHead>Дата создания</TableHead>
+                  <TableHead>Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders?.map((order: any) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-sm">
+                      #{order.id.slice(-8).toUpperCase()}
+                    </TableCell>
+                    <TableCell className="font-medium">{order.title || order.orderNumber}</TableCell>
+                    <TableCell>
+                      <Badge variant={ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.variant || "outline"}>
+                        {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.factoryId ? (
+                        (() => {
+                          const factory = (factories as any[])?.find((f: any) => f.id === order.factoryId);
+                          return factory ? factory.name : 'Завод не найден';
+                        })()
+                      ) : (
+                        <span className="text-gray-400">Не назначен</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{formatDate(order.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {canEditOrder(order) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingOrderId(order.id);
+                              setIsCreateOrderOpen(true);
+                            }}
+                            data-testid={`button-edit-${order.id}`}
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {order.status === 'confirmed' && !order.factoryId && user?.role === 'customer_operator' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => sendOrderToFactory(order.id)}
+                            data-testid={`button-send-factory-${order.id}`}
+                          >
+                            Отправить на завод
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Create Order Dialog для заказчиков - уже определен выше */}
       </div>
     );
   }
 
   // Интерфейс администратора (оригинальный)
-  return (
-    <div className="container mx-auto p-6 space-y-6">
+  if (user?.role === 'administrator') {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Button 
           variant="outline" 
@@ -1347,10 +1323,10 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               Выберите завод и укажите параметры для производства
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSendToFactory)} className="space-y-4">
+          <Form {...createOrderForm}>
+            <form onSubmit={createOrderForm.handleSubmit(handleCreateOrder)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={createOrderForm.control}
                 name="factoryId"
                 render={({ field }) => (
                   <FormItem>
@@ -1441,21 +1417,42 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               />
 
               <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={closeSendDialog}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsCreateOrderOpen(false)}
+                  data-testid="button-cancel-order"
+                >
                   Отмена
                 </Button>
                 <Button
                   type="submit"
-                  disabled={sendToFactoryMutation.isPending}
-                  data-testid="button-submit-send-to-factory"
+                  disabled={createOrderMutation.isPending}
+                  data-testid="button-submit-order"
                 >
-                  {sendToFactoryMutation.isPending ? "Отправка..." : "Отправить на завод"}
+                  {createOrderMutation.isPending 
+                    ? "Создание..." 
+                    : editingOrderId 
+                      ? "Сохранить изменения" 
+                      : "Создать заказ"
+                  }
                 </Button>
               </div>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
+      </div>
+    );
+  }
+
+  // Default fallback for other roles
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Доступ запрещен</h1>
+        <p className="text-gray-600 dark:text-gray-400">У вас нет прав для просмотра этой страницы.</p>
+      </div>
     </div>
   );
 }
