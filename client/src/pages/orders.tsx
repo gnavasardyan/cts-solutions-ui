@@ -316,13 +316,18 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
   const openSendToFactoryDialog = (orderId: string) => {
     console.log('Opening send to factory dialog for order:', orderId);
-    // Close all other dialogs
+    console.log('Current showSendDialog state:', showSendDialog);
+    console.log('Current isCreateOrderOpen state:', isCreateOrderOpen);
+    
+    // Close all other dialogs first
     setIsCreateOrderOpen(false);
     setEditingOrderId(null);
     
     // Set the order and show dialog
     setSendingOrderId(orderId);
     setShowSendDialog(true);
+    
+    console.log('After setting - showSendDialog should be true');
     
     // Reset form
     form.reset({
@@ -331,7 +336,11 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       deadline: "",
       notes: "",
     });
-    console.log('Send dialog opened for order:', orderId);
+    
+    // Force re-render check
+    setTimeout(() => {
+      console.log('1 second later - showSendDialog state:', showSendDialog);
+    }, 1000);
   };
 
   const openEditDialog = (order: any) => {
@@ -1371,6 +1380,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       )}
 
       {/* Send to Factory Dialog */}
+      {console.log('Rendering dialog with showSendDialog:', showSendDialog, 'sendingOrderId:', sendingOrderId)}
       <Dialog open={showSendDialog} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
