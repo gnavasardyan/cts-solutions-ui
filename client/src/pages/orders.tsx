@@ -306,6 +306,34 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     }
   };
 
+  // Delete order function for admin
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      return await apiRequest("DELETE", `/api/orders/${orderId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "Успешно",
+        description: "Заказ удален",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting order:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить заказ",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteOrder = (orderId: string) => {
+    if (confirm("Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.")) {
+      deleteOrderMutation.mutate(orderId);
+    }
+  };
+
   const openEditDialog = (order: any) => {
     setEditingOrderId(order.id);
     // Pre-fill the form with current factory data
@@ -1523,7 +1551,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
           <ArrowLeft className="h-4 w-4 mr-2" />
           К каталогу
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Все заказы
           </h1>
@@ -1534,6 +1562,14 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
             </span>
           </p>
         </div>
+        <Button 
+          onClick={() => setIsCreateOrderOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          data-testid="button-admin-create-order"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Создать заказ
+        </Button>
       </div>
 
       {isLoading ? (
@@ -1756,12 +1792,34 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   </div>
                 )}
 
-                {/* Admin info */}
-                {user?.role === 'administrator' && order.customerId !== user.id && (
+                {/* Admin actions */}
+                {user?.role === 'administrator' && (
                   <div className="mt-4 pt-4 border-t">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Заказчик: ID {order.customerId.slice(-8).toUpperCase()}
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Заказчик: ID {order.customerId.slice(-8).toUpperCase()}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openOrderEditDialog(order)}
+                          data-testid={`button-admin-edit-${order.id}`}
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          disabled={deleteOrderMutation.isPending}
+                          data-testid={`button-admin-delete-${order.id}`}
+                        >
+                          {deleteOrderMutation.isPending ? "Удаление..." : "Удалить"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
