@@ -30,6 +30,18 @@ const ORDER_STATUS = {
   cancelled: { label: "Отменен", variant: "destructive" as const },
 };
 
+const CONSTRUCTION_DOCS = {
+  "Здание": "https://docs.example.com/buildings",
+  "Мост": "https://docs.example.com/bridges", 
+  "Башня": "https://docs.example.com/towers",
+  "Промышленная конструкция": "https://docs.example.com/industrial",
+  "Склад": "https://docs.example.com/warehouses",
+  "Жилой комплекс": "https://docs.example.com/residential",
+  "Торговый центр": "https://docs.example.com/shopping",
+  "Спортивное сооружение": "https://docs.example.com/sports",
+  "Другое": "https://docs.example.com/other"
+};
+
 const sendToFactorySchema = z.object({
   factoryId: z.string().min(1, "Выберите завод"),
   priority: z.string().default("normal"),
@@ -164,12 +176,14 @@ export default function OrdersPage() {
         priority: data.priority,
         factoryId: data.factoryId,
         deadline: data.deadline ? Math.floor(new Date(data.deadline).getTime() / 1000) : undefined,
-        notes: `${data.title}${data.description ? ` - ${data.description}` : ''}
-Тип: ${data.constructionType}
-Адрес: ${data.deliveryAddress}
-Контакт: ${data.contactPerson} (${data.contactPhone})
-${data.estimatedBudget ? `Бюджет: ${data.estimatedBudget}` : ''}
-${data.notes ? `Примечания: ${data.notes}` : ''}`,
+        notes: [
+          `${data.title}${data.description ? ` - ${data.description}` : ''}`,
+          `Тип: ${data.constructionType}`,
+          `Адрес: ${data.deliveryAddress}`,
+          `Контакт: ${data.contactPerson} (${data.contactPhone})`,
+          data.estimatedBudget ? `Бюджет: ${data.estimatedBudget}` : '',
+          data.notes ? `Примечания: ${data.notes}` : ''
+        ].filter(Boolean).join('\n'),
         totalAmount: data.totalAmount,
       });
     },
@@ -676,15 +690,22 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Здание">Здание</SelectItem>
-                          <SelectItem value="Мост">Мост</SelectItem>
-                          <SelectItem value="Башня">Башня</SelectItem>
-                          <SelectItem value="Промышленная конструкция">Промышленная конструкция</SelectItem>
-                          <SelectItem value="Склад">Склад</SelectItem>
-                          <SelectItem value="Жилой комплекс">Жилой комплекс</SelectItem>
-                          <SelectItem value="Торговый центр">Торговый центр</SelectItem>
-                          <SelectItem value="Спортивное сооружение">Спортивное сооружение</SelectItem>
-                          <SelectItem value="Другое">Другое</SelectItem>
+                          {Object.keys(CONSTRUCTION_DOCS).map(type => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{type}</span>
+                                <a 
+                                  href={CONSTRUCTION_DOCS[type as keyof typeof CONSTRUCTION_DOCS]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs underline ml-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  документация
+                                </a>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -1094,7 +1115,20 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         <div className="flex items-center gap-2">
                           <Package className="h-4 w-4 text-gray-400" />
                           <span className="text-gray-600 dark:text-gray-400">Тип:</span>
-                          <span className="font-medium">{order.constructionType}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{order.constructionType}</span>
+                            {CONSTRUCTION_DOCS[order.constructionType as keyof typeof CONSTRUCTION_DOCS] && (
+                              <a 
+                                href={CONSTRUCTION_DOCS[order.constructionType as keyof typeof CONSTRUCTION_DOCS]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-xs underline"
+                                data-testid={`link-docs-${order.constructionType}`}
+                              >
+                                документация
+                              </a>
+                            )}
+                          </div>
                         </div>
                       )}
                       {order.deliveryAddress && (
@@ -1241,15 +1275,22 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Здание">Здание</SelectItem>
-                          <SelectItem value="Мост">Мост</SelectItem>
-                          <SelectItem value="Башня">Башня</SelectItem>
-                          <SelectItem value="Промышленная конструкция">Промышленная конструкция</SelectItem>
-                          <SelectItem value="Склад">Склад</SelectItem>
-                          <SelectItem value="Жилой комплекс">Жилой комплекс</SelectItem>
-                          <SelectItem value="Торговый центр">Торговый центр</SelectItem>
-                          <SelectItem value="Спортивное сооружение">Спортивное сооружение</SelectItem>
-                          <SelectItem value="Другое">Другое</SelectItem>
+                          {Object.keys(CONSTRUCTION_DOCS).map(type => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{type}</span>
+                                <a 
+                                  href={CONSTRUCTION_DOCS[type as keyof typeof CONSTRUCTION_DOCS]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs underline ml-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  документация
+                                </a>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
