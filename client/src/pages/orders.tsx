@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory, Edit2, Plus, ShoppingCart } from "lucide-react";
+import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory, Edit2, Plus, ShoppingCart, Minus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 const ORDER_STATUS = {
@@ -59,10 +59,8 @@ type CreateOrderData = z.infer<typeof createOrderSchema>;
 export default function OrdersPage() {
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-
-
-
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -84,6 +82,12 @@ export default function OrdersPage() {
   // Fetch factories for sending orders
   const { data: factories = [] } = useQuery({
     queryKey: ['/api/factories'],
+    enabled: true,
+  });
+
+  // Fetch products for catalog in order creation
+  const { data: products = [] } = useQuery({
+    queryKey: ['/api/products'],
     enabled: true,
   });
 
@@ -136,6 +140,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setIsCreateOrderOpen(false);
       createOrderForm.reset();
+      setSelectedProducts({}); // Clear selected products
       toast({
         title: "Заказ создан",
         description: "Новый заказ успешно создан",
@@ -169,8 +174,42 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     },
   });
 
+  // Functions for product selection in catalog
+  const updateProductQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      const newSelected = { ...selectedProducts };
+      delete newSelected[productId];
+      setSelectedProducts(newSelected);
+    } else {
+      setSelectedProducts(prev => ({ ...prev, [productId]: quantity }));
+    }
+  };
+
+  const calculateOrderTotal = () => {
+    return Object.entries(selectedProducts).reduce((total, [productId, quantity]) => {
+      const product = (products as any[]).find(p => p.id === productId);
+      return total + (product ? product.price * quantity : 0);
+    }, 0);
+  };
+
   const handleCreateOrder = (data: CreateOrderData) => {
-    createOrderMutation.mutate(data);
+    // Include selected products in the order
+    const orderItems = Object.entries(selectedProducts).map(([productId, quantity]) => {
+      const product = (products as any[]).find(p => p.id === productId);
+      return {
+        productId,
+        quantity,
+        price: product?.price || 0
+      };
+    });
+    
+    const orderData = {
+      ...data,
+      totalAmount: calculateOrderTotal(),
+      items: orderItems
+    };
+    
+    createOrderMutation.mutate(orderData);
   };
 
   const handleSendToFactory = (data: SendToFactoryData) => {
@@ -598,6 +637,84 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                     </FormItem>
                   )}
                 />
+
+                {/* Catalog Section */}
+                <div className="border-t pt-4 mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Выбор продукции
+                  </h3>
+                  
+                  {Array.isArray(products) && products.length > 0 ? (
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {products.map((product: any) => (
+                        <Card key={product.id} className="p-3" data-testid={`product-card-${product.id}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{product.name}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                {product.gost} • {product.weight} кг • {formatPrice(product.price)}
+                              </div>
+                              {product.description && (
+                                <div className="text-xs text-gray-500 mt-1">{product.description}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateProductQuantity(product.id, (selectedProducts[product.id] || 0) - 1)}
+                                disabled={!selectedProducts[product.id]}
+                                data-testid={`button-decrease-${product.id}`}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="min-w-[2rem] text-center text-sm">
+                                {selectedProducts[product.id] || 0}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateProductQuantity(product.id, (selectedProducts[product.id] || 0) + 1)}
+                                data-testid={`button-increase-${product.id}`}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      Каталог продукции загружается...
+                    </div>
+                  )}
+                  
+                  {/* Order Summary */}
+                  {Object.keys(selectedProducts).length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <h4 className="font-medium text-sm mb-2">Выбранные товары:</h4>
+                      <div className="space-y-1 text-xs">
+                        {Object.entries(selectedProducts).map(([productId, quantity]) => {
+                          const product = products.find((p: any) => p.id === productId);
+                          return product ? (
+                            <div key={productId} className="flex justify-between">
+                              <span>{product.name} × {quantity}</span>
+                              <span>{formatPrice(product.price * quantity)}</span>
+                            </div>
+                          ) : null;
+                        })}
+                        <div className="border-t pt-1 mt-2 font-medium flex justify-between">
+                          <span>Общая сумма:</span>
+                          <span>{formatPrice(calculateOrderTotal())}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <FormField
                   control={createOrderForm.control}
