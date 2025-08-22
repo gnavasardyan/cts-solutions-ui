@@ -480,18 +480,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                     {(canEditOrder(order) || canChangeStatus(order)) && (
                       <div className="flex gap-1 mt-2">
-                        {canEditOrder(order) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openOrderEditDialog(order)}
-                            className="h-6 px-2 text-xs"
-                            data-testid={`button-edit-order-${order.id}`}
-                          >
-                            <Edit2 className="h-3 w-3 mr-1" />
-                            Изменить
-                          </Button>
-                        )}
+
                         {canChangeStatus(order) && (
                           <Button
                             variant="ghost"
@@ -581,8 +570,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           data-testid={`button-edit-factory-${order.id}`}
                         >
                           <Edit2 className="h-3 w-3 mr-1" />
-                          Изменить
-                        </Button>
                       )}
                     </div>
                     {(() => {
@@ -637,8 +624,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
-            <DialogDescription>
               {editingOrderId 
                 ? "Внесите изменения в информацию о заказе" 
                 : "Заполните информацию о заказе металлоконструкций"
@@ -1194,8 +1179,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
-              <DialogDescription>
                 {editingOrderId 
                   ? "Внесите изменения в информацию о заказе" 
                   : "Заполните информацию о заказе металлоконструкций"
@@ -1689,8 +1672,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           data-testid={`button-edit-factory-${order.id}`}
                         >
                           <Edit2 className="h-3 w-3 mr-1" />
-                          Изменить
-                        </Button>
                       )}
                     </div>
                     {(() => {
@@ -1802,6 +1783,15 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       </div>
                       <div className="flex gap-2">
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openOrderEditDialog(order)}
+                          data-testid={`button-admin-edit-${order.id}`}
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </Button>
+                        <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteOrder(order.id)}
@@ -1824,8 +1814,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
-            <DialogDescription>
               Выберите завод и укажите параметры для производства
             </DialogDescription>
           </DialogHeader>
