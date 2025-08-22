@@ -142,8 +142,7 @@ export default function FactoryOrders() {
         return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
       case "packed":
         return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300";
-      case "completed":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+
       case "shipped":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
       default:
@@ -174,7 +173,7 @@ export default function FactoryOrders() {
       case "in_production": return "В производстве";
       case "ready_for_marking": return "Готов к маркировке";
       case "packed": return "Упакован";
-      case "completed": return "Выполнен";
+
       case "shipped": return "Отгружен";
       default: return status;
     }
@@ -362,7 +361,7 @@ export default function FactoryOrders() {
                       <SelectItem value="new">Новый</SelectItem>
                       <SelectItem value="sent_to_factory">Отправлен на завод</SelectItem>
                       <SelectItem value="in_production">В производстве</SelectItem>
-                      <SelectItem value="completed">Выполнен</SelectItem>
+
                       <SelectItem value="shipped">Отгружен</SelectItem>
                     </SelectContent>
                   </Select>
