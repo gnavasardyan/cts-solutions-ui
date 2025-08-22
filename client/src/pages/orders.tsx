@@ -355,11 +355,39 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   <div className="text-right">
                     <Badge 
                       variant={ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.variant || "secondary"}
-                      className="mb-2"
+                      className=""
                     >
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {(canEditOrder(order) || canChangeStatus(order)) && (
+                      <div className="flex gap-1 mt-2">
+                        {canEditOrder(order) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingOrderId(order.id)}
+                            className="h-6 px-2 text-xs"
+                            data-testid={`button-edit-order-${order.id}`}
+                          >
+                            <Edit2 className="h-3 w-3 mr-1" />
+                            Изменить
+                          </Button>
+                        )}
+                        {canChangeStatus(order) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStatusChange(order.id, "pending")}
+                            className="h-6 px-2 text-xs text-blue-600"
+                            data-testid={`button-submit-order-${order.id}`}
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            Отправить
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     </div>
                   </div>
                 </div>
@@ -1013,7 +1041,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   <div className="text-right">
                     <Badge 
                       variant={ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.variant || "secondary"}
-                      className="mb-2"
+                      className=""
                     >
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>

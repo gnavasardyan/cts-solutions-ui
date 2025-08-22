@@ -77,6 +77,7 @@ export interface IStorage {
   // Order operations
   getOrdersByCustomer(customerId: string): Promise<(Order & { items: (OrderItem & { product: Product })[] })[]>;
   getAllOrders(): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User })[]>;
+  getOrderById(id: string): Promise<Order | undefined>;
   sendOrderToFactory(orderId: string, updateData: UpdateOrder): Promise<Order | undefined>;
   getFactoryOrders(filters?: { status?: string; priority?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]>;
 
@@ -470,6 +471,14 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newOrder;
+  }
+
+  async getOrderById(id: string): Promise<Order | undefined> {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, id));
+    return order;
   }
 
   async updateOrderStatus(id: string, status: string): Promise<void> {
