@@ -1802,15 +1802,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openOrderEditDialog(order)}
-                          data-testid={`button-admin-edit-${order.id}`}
-                        >
-                          <Edit2 className="h-4 w-4 mr-2" />
-                          Редактировать
-                        </Button>
-                        <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteOrder(order.id)}
