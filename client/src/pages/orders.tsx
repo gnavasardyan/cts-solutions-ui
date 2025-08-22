@@ -386,7 +386,8 @@ export default function OrdersPage() {
     
     console.log('Editing order:', { order, notes, title, description, typeMatch, addressMatch, contactMatch });
     
-    createOrderForm.reset({
+    // Prepare form data
+    const formData = {
       title: title,
       description: description,
       constructionType: typeMatch ? typeMatch[1].trim() : "",
@@ -400,7 +401,19 @@ export default function OrdersPage() {
       notes: notesMatch ? notesMatch[1].trim() : "",
       status: order.status || "draft",
       totalAmount: order.totalAmount || 0
-    });
+    };
+    
+    console.log('Form data to fill:', formData);
+    
+    // Reset and fill form
+    createOrderForm.reset(formData);
+    
+    // Force form update using setTimeout to ensure React state updates
+    setTimeout(() => {
+      Object.entries(formData).forEach(([key, value]) => {
+        createOrderForm.setValue(key as any, value);
+      });
+    }, 50);
     
     // Load existing order items into selectedProducts
     if (order.items && order.items.length > 0) {
