@@ -991,7 +991,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders?.map((order: any) => (
+                {(orders as any[])?.filter((order: any) => order.customerId === user.id).map((order: any) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-sm">
                       #{order.id.slice(-8).toUpperCase()}
