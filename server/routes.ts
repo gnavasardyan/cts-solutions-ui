@@ -355,11 +355,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.user?.id) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      const orderData = insertOrderSchema.parse({
-        ...req.body,
+      
+      const { items, ...orderData } = req.body;
+      const parsedOrderData = insertOrderSchema.parse({
+        ...orderData,
         customerId: req.user.id,
       });
-      const order = await storage.createOrder(orderData);
+      
+      const order = await storage.createOrder(parsedOrderData);
+      
+      // Create order items if they exist
+      if (items && items.length > 0) {
+        await storage.createOrderItems(order.id, items);
+      }
+      
       res.json(order);
     } catch (error) {
       console.error("Error creating order:", error);
@@ -416,9 +425,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
       
-      const updatedOrder = await storage.updateOrder(orderId, updateData);
+      const { items, ...orderUpdateData } = updateData;
+      const updatedOrder = await storage.updateOrder(orderId, orderUpdateData);
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Update order items if they exist
+      if (items && items.length > 0) {
+        // Delete existing order items
+        await storage.deleteOrderItems(orderId);
+        // Create new order items
+        await storage.createOrderItems(orderId, items);
       }
       
       res.json(updatedOrder);

@@ -89,6 +89,8 @@ export interface IStorage {
   updateFactory(id: string, updates: Partial<InsertFactory>): Promise<Factory | undefined>;
   deleteFactory(id: string): Promise<boolean>;
   createOrder(order: InsertOrder): Promise<Order>;
+  createOrderItems(orderId: string, items: any[]): Promise<void>;
+  deleteOrderItems(orderId: string): Promise<void>;
   updateOrderStatus(id: string, status: string): Promise<void>;
 }
 
@@ -472,6 +474,27 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newOrder;
+  }
+
+  async createOrderItems(orderId: string, items: any[]): Promise<void> {
+    if (items && items.length > 0) {
+      const orderItemsData = items.map((item: any) => ({
+        id: crypto.randomUUID().replace(/-/g, '').toUpperCase(),
+        orderId: orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price || 0,
+        specifications: item.specifications || null,
+        status: 'pending',
+        createdAt: Math.floor(Date.now() / 1000),
+      }));
+      
+      await db.insert(orderItems).values(orderItemsData);
+    }
+  }
+
+  async deleteOrderItems(orderId: string): Promise<void> {
+    await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
   }
 
   async getOrderById(id: string): Promise<Order | undefined> {
