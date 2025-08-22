@@ -62,6 +62,7 @@ export default function OrdersPage() {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<{[key: string]: number}>({});
+  const [isSendToFactoryOpen, setIsSendToFactoryOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -298,24 +299,17 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
   const openSendToFactoryDialog = (orderId: string) => {
     console.log('Opening send to factory dialog for order:', orderId);
-    console.log('Current sendingOrderId before:', sendingOrderId);
-    console.log('Current isCreateOrderOpen before:', isCreateOrderOpen);
-    
-    // Close any open dialogs first
+    setSendingOrderId(orderId);
+    setIsSendToFactoryOpen(true);
     setIsCreateOrderOpen(false);
     setEditingOrderId(null);
-    
-    // Then open send to factory dialog
-    setTimeout(() => {
-      setSendingOrderId(orderId);
-      form.reset({
-        factoryId: "",
-        priority: "normal",
-        deadline: "",
-        notes: "",
-      });
-      console.log('Dialog should be open now, sendingOrderId:', orderId);
-    }, 100);
+    form.reset({
+      factoryId: "",
+      priority: "normal",
+      deadline: "",
+      notes: "",
+    });
+    console.log('isSendToFactoryOpen set to true');
   };
 
   const openEditDialog = (order: any) => {
@@ -334,6 +328,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   const closeSendDialog = () => {
     setSendingOrderId(null);
     setEditingOrderId(null);
+    setIsSendToFactoryOpen(false);
     form.reset();
   };
 
@@ -1355,7 +1350,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       )}
 
       {/* Send to Factory Dialog */}
-      <Dialog open={!!sendingOrderId && !isCreateOrderOpen} onOpenChange={closeSendDialog}>
+      <Dialog open={isSendToFactoryOpen} onOpenChange={closeSendDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Отправить заказ на завод</DialogTitle>
