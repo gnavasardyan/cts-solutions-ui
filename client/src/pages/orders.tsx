@@ -19,6 +19,7 @@ import { Package, Calendar, User, FileText, ArrowLeft, Send, Factory, Edit2, Plu
 import { apiRequest } from "@/lib/queryClient";
 
 const ORDER_STATUS = {
+  draft: { label: "Черновик", variant: "outline" as const },
   pending: { label: "В обработке", variant: "secondary" as const },
   confirmed: { label: "Подтвержден", variant: "default" as const },
   sent_to_factory: { label: "Отправлен на завод", variant: "outline" as const },
@@ -47,7 +48,7 @@ const createOrderSchema = z.object({
   contactPerson: z.string().min(1, "Укажите контактное лицо"),
   contactPhone: z.string().min(1, "Укажите контактный телефон"),
   estimatedBudget: z.string().optional(),
-  status: z.string().default("pending"),
+  status: z.string().default("draft"),
   priority: z.string().default("normal"),
   deadline: z.string().optional(),
   notes: z.string().optional(),
@@ -112,7 +113,7 @@ export default function OrdersPage() {
       contactPerson: "",
       contactPhone: "",
       estimatedBudget: "",
-      status: "pending",
+      status: "draft",
       priority: "normal",
       deadline: "",
       notes: "",
@@ -292,7 +293,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               Заказов пока нет
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Оформите первый заказ в каталоге продукции
+              Создайте первый заказ или перейдите в каталог для выбора продукции
             </p>
             <Button onClick={() => window.location.href = '/catalog'} data-testid="button-go-catalog">
               Перейти в каталог
@@ -332,7 +333,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 <div>
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Package className="h-4 w-4" />
-                    Состав заказа ({order.items.length} позиций)
+                    Состав заказа
                   </h4>
                   <div className="space-y-2">
                     {order.items.map((item: any, index: number) => (
@@ -349,10 +350,9 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт. × 0 ₽
+                            {item.quantity} шт.
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            = 0 ₽
                           </div>
                         </div>
                       </div>
@@ -951,7 +951,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               Заказов пока нет
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Оформите первый заказ в каталоге продукции
+              Создайте первый заказ или перейдите в каталог для выбора продукции
             </p>
             <Button onClick={() => window.location.href = '/catalog'} data-testid="button-go-catalog">
               Перейти в каталог
@@ -991,7 +991,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 <div>
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Package className="h-4 w-4" />
-                    Состав заказа ({order.items.length} позиций)
+                    Состав заказа
                   </h4>
                   <div className="space-y-2">
                     {order.items.map((item: any, index: number) => (
@@ -1008,10 +1008,9 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт. × 0 ₽
+                            {item.quantity} шт.
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            = 0 ₽
                           </div>
                         </div>
                       </div>
