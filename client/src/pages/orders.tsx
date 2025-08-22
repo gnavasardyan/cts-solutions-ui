@@ -293,10 +293,10 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               Заказов пока нет
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Создайте первый заказ или перейдите в каталог для выбора продукции
+              Создайте первый заказ используя форму заказа
             </p>
             <Button onClick={() => window.location.href = '/catalog'} data-testid="button-go-catalog">
-              Перейти в каталог
+              Создать заказ
             </Button>
           </CardContent>
         </Card>
@@ -951,10 +951,10 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
               Заказов пока нет
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Создайте первый заказ или перейдите в каталог для выбора продукции
+              Создайте первый заказ используя форму заказа
             </p>
             <Button onClick={() => window.location.href = '/catalog'} data-testid="button-go-catalog">
-              Перейти в каталог
+              Создать заказ
             </Button>
           </CardContent>
         </Card>
