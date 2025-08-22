@@ -245,11 +245,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-    }).format(price);
+    return "0 ₽"; // Always show 0 ₽ as requested
   };
 
   const formatDate = (timestamp: number) => {
@@ -326,7 +322,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {formatPrice(order.totalAmount)}
+                      0 ₽
                     </div>
                   </div>
                 </div>
@@ -353,10 +349,10 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт. × {formatPrice(item.price)}
+                            {item.quantity} шт. × 0 ₽
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            = {formatPrice(item.price * item.quantity)}
+                            = 0 ₽
                           </div>
                         </div>
                       </div>
@@ -653,7 +649,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                             <div className="flex-1">
                               <div className="font-medium text-sm">{product.name}</div>
                               <div className="text-xs text-gray-600 dark:text-gray-400">
-                                {product.gost} • {product.weight} кг • {formatPrice(product.price)}
+                                {product.gost} • {product.weight} кг • 0 ₽
                               </div>
                               {product.description && (
                                 <div className="text-xs text-gray-500 mt-1">{product.description}</div>
@@ -699,17 +695,17 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       <h4 className="font-medium text-sm mb-2">Выбранные товары:</h4>
                       <div className="space-y-1 text-xs">
                         {Object.entries(selectedProducts).map(([productId, quantity]) => {
-                          const product = products.find((p: any) => p.id === productId);
+                          const product = (products as any[]).find((p: any) => p.id === productId);
                           return product ? (
                             <div key={productId} className="flex justify-between">
                               <span>{product.name} × {quantity}</span>
-                              <span>{formatPrice(product.price * quantity)}</span>
+                              <span>0 ₽</span>
                             </div>
                           ) : null;
                         })}
                         <div className="border-t pt-1 mt-2 font-medium flex justify-between">
                           <span>Общая сумма:</span>
-                          <span>{formatPrice(calculateOrderTotal())}</span>
+                          <span>0 ₽</span>
                         </div>
                       </div>
                     </div>
@@ -985,7 +981,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {formatPrice(order.totalAmount)}
+                      0 ₽
                     </div>
                   </div>
                 </div>
@@ -1012,10 +1008,10 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт. × {formatPrice(item.price)}
+                            {item.quantity} шт. × 0 ₽
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            = {formatPrice(item.price * item.quantity)}
+                            = 0 ₽
                           </div>
                         </div>
                       </div>
