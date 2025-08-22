@@ -1132,7 +1132,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
           </div>
         )}
 
-        {/* Create Order Dialog для заказчиков */}
+        {/* Create Order Dialog для заказчиков с каталогом */}
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -1195,17 +1195,117 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
 
                 <FormField
                   control={createOrderForm.control}
-                  name="deliveryAddress"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Адрес доставки *</FormLabel>
+                      <FormLabel>Описание проекта (необязательно)</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Укажите адрес доставки" 
+                        <Textarea 
+                          placeholder="Краткое описание проекта и особенности" 
                           {...field} 
-                          data-testid="input-delivery-address"
+                          data-testid="textarea-order-description"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Catalog Section */}
+                <div className="border-t pt-4 mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Выбор продукции
+                  </h3>
+                  
+                  {Array.isArray(products) && products.length > 0 ? (
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {products.map((product: any) => (
+                        <Card key={product.id} className="p-3" data-testid={`product-card-${product.id}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{product.name}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                              </div>
+                              {product.description && (
+                                <div className="text-xs text-gray-500 mt-1">{product.description}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateProductQuantity(product.id, (selectedProducts[product.id] || 0) - 1)}
+                                disabled={!selectedProducts[product.id]}
+                                data-testid={`button-decrease-${product.id}`}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="min-w-[2rem] text-center text-sm">
+                                {selectedProducts[product.id] || 0}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateProductQuantity(product.id, (selectedProducts[product.id] || 0) + 1)}
+                                data-testid={`button-increase-${product.id}`}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      Каталог продукции загружается...
+                    </div>
+                  )}
+                  
+                  {/* Order Summary */}
+                  {Object.keys(selectedProducts).length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <h4 className="font-medium text-sm mb-2">Выбранные товары:</h4>
+                      <div className="space-y-1 text-xs">
+                        {Object.entries(selectedProducts).map(([productId, quantity]) => {
+                          const product = (products as any[]).find((p: any) => p.id === productId);
+                          return product ? (
+                            <div key={productId} className="flex justify-between">
+                              <span>{product.name} × {quantity}</span>
+                            </div>
+                          ) : null;
+                        })}
+                        <div className="border-t pt-1 mt-2 font-medium flex justify-between">
+                          <span>Общая сумма:</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <FormField
+                  control={createOrderForm.control}
+                  name="factoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Завод *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-factory">
+                            <SelectValue placeholder="Выберите завод для заказа" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.isArray(factories) && factories.map((factory: any) => (
+                            <SelectItem key={factory.id} value={factory.id}>
+                              {factory.name} - {factory.location}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1214,13 +1314,31 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={createOrderForm.control}
+                    name="deliveryAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Адрес доставки *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Укажите адрес доставки" 
+                            {...field} 
+                            data-testid="input-delivery-address"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={createOrderForm.control}
                     name="contactPerson"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Контактное лицо *</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Имя и должность" 
+                            placeholder="ФИО ответственного" 
                             {...field} 
                             data-testid="input-contact-person"
                           />
@@ -1229,7 +1347,9 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       </FormItem>
                     )}
                   />
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={createOrderForm.control}
                     name="contactPhone"
@@ -1238,7 +1358,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         <FormLabel>Контактный телефон *</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="+7 (000) 000-00-00" 
+                            placeholder="+7 (___) ___-__-__" 
                             {...field} 
                             data-testid="input-contact-phone"
                           />
@@ -1247,25 +1367,69 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={createOrderForm.control}
+                    name="estimatedBudget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Предполагаемый бюджет (необязательно)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="например: 1 000 000 руб." 
+                            {...field} 
+                            data-testid="input-estimated-budget"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
-                <FormField
-                  control={createOrderForm.control}
-                  name="deadline"
-                  render={({ field }) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={createOrderForm.control}
+                    name="priority"
+                    render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Срок выполнения</FormLabel>
+                      <FormLabel>Приоритет</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-order-priority">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="low">Низкий</SelectItem>
+                          <SelectItem value="normal">Обычный</SelectItem>
+                          <SelectItem value="high">Высокий</SelectItem>
+                          <SelectItem value="urgent">Срочный</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                  />
+                  
+                  <FormField
+                    control={createOrderForm.control}
+                    name="deadline"
+                    render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Срок выполнения (необязательно)</FormLabel>
                       <FormControl>
                         <Input 
                           type="date" 
                           {...field} 
-                          data-testid="input-deadline"
+                          data-testid="input-order-deadline"
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                </div>
 
                 <FormField
                   control={createOrderForm.control}
