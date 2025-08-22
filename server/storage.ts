@@ -89,6 +89,7 @@ export interface IStorage {
   updateFactory(id: string, updates: Partial<InsertFactory>): Promise<Factory | undefined>;
   deleteFactory(id: string): Promise<boolean>;
   createOrder(order: InsertOrder): Promise<Order>;
+  deleteOrder(id: string): Promise<void>;
   createOrderItems(orderId: string, items: any[]): Promise<void>;
   deleteOrderItems(orderId: string): Promise<void>;
   updateOrderStatus(id: string, status: string): Promise<void>;
@@ -528,7 +529,12 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id));
   }
 
-
+  async deleteOrder(id: string): Promise<void> {
+    // First delete order items
+    await this.deleteOrderItems(id);
+    // Then delete the order itself
+    await db.delete(orders).where(eq(orders.id, id));
+  }
 
   // Factory operations
   async getFactories(): Promise<Factory[]> {

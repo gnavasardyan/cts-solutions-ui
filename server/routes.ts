@@ -479,6 +479,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete order (admin only)
+  app.delete('/api/orders/:id', authenticateToken, requireRole([UserRoles.ADMINISTRATOR]), async (req: any, res) => {
+    try {
+      await storage.deleteOrder(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      res.status(500).json({ message: "Failed to delete order" });
+    }
+  });
+
   // Factory management routes
   app.get('/api/factories', async (req: any, res) => {
     try {
