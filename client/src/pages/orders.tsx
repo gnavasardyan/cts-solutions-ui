@@ -297,6 +297,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const openSendToFactoryDialog = (orderId: string) => {
+    console.log('Opening send to factory dialog for order:', orderId);
     setSendingOrderId(orderId);
     setEditingOrderId(null);
     form.reset({

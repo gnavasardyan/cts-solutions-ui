@@ -92,7 +92,7 @@ export interface IStorage {
   createOrderItems(orderId: string, items: any[]): Promise<void>;
   deleteOrderItems(orderId: string): Promise<void>;
   updateOrderStatus(id: string, status: string): Promise<void>;
-  sendOrderToFactory(orderId: string, factoryData: any): Promise<Order | undefined>;
+  sendOrderToFactory(orderId: string, updateData: any): Promise<Order | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -528,27 +528,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id));
   }
 
-  async sendOrderToFactory(orderId: string, factoryData: any): Promise<Order | undefined> {
-    const updateData: Partial<InsertOrder> = {
-      factoryId: factoryData.factoryId,
-      priority: factoryData.priority || 'normal',
-      status: factoryData.status || 'sent_to_factory',
-      notes: factoryData.notes,
-      updatedAt: Math.floor(Date.now() / 1000),
-    };
 
-    if (factoryData.deadline) {
-      updateData.deadline = Math.floor(new Date(factoryData.deadline).getTime() / 1000);
-    }
-
-    const [updatedOrder] = await db
-      .update(orders)
-      .set(updateData)
-      .where(eq(orders.id, orderId))
-      .returning();
-    
-    return updatedOrder;
-  }
 
   // Factory operations
   async getFactories(): Promise<Factory[]> {
@@ -591,17 +571,22 @@ export class DatabaseStorage implements IStorage {
     return result.changes > 0;
   }
 
-  // Enhanced order operations
-  async sendOrderToFactory(orderId: string, updateData: UpdateOrder): Promise<Order | undefined> {
+  async sendOrderToFactory(orderId: string, updateData: any): Promise<Order | undefined> {
     const [updatedOrder] = await db.update(orders)
       .set({
-        ...updateData,
+        factoryId: updateData.factoryId,
+        priority: updateData.priority || 'normal',
+        status: updateData.status || 'sent_to_factory',
+        notes: updateData.notes,
+        deadline: updateData.deadline ? Math.floor(new Date(updateData.deadline).getTime() / 1000) : null,
         updatedAt: Math.floor(Date.now() / 1000)
       })
       .where(eq(orders.id, orderId))
       .returning();
     return updatedOrder;
   }
+
+
 
   async getFactoryOrders(filters?: { status?: string; priority?: string; factoryId?: string }): Promise<(Order & { items: (OrderItem & { product: Product })[], customer: User, factory?: Factory })[]> {
     let whereConditions = [];
