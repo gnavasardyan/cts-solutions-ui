@@ -394,6 +394,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update order (customer operators can only update draft orders)
+  app.patch('/api/orders/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const orderId = req.params.id;
+      const updateData = req.body;
+      
+      // Check permissions
+      if (req.user?.role === UserRoles.CUSTOMER_OPERATOR) {
+        const order = await storage.getOrderById(orderId);
+        if (!order) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+        if (order.customerId !== req.user.id) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+        if (order.status !== 'draft') {
+          return res.status(403).json({ message: "Can only update draft orders" });
+        }
+      } else if (![UserRoles.ADMINISTRATOR].includes(req.user?.role)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const updatedOrder = await storage.updateOrder(orderId, updateData);
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error updating order:", error);
+      res.status(500).json({ message: "Failed to update order" });
+    }
+  });
+
   // Send order to factory (customer operator)
   app.post('/api/orders/:id/send-to-factory', authenticateToken, requireRole([UserRoles.CUSTOMER_OPERATOR, UserRoles.ADMINISTRATOR]), async (req: any, res) => {
     try {

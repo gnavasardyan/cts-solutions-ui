@@ -194,6 +194,30 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     },
   });
 
+  const updateOrderMutation = useMutation({
+    mutationFn: async ({ orderId, orderData }: { orderId: string, orderData: any }) => {
+      return await apiRequest("PATCH", `/api/orders/${orderId}`, orderData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setIsCreateOrderOpen(false);
+      setEditingOrderId(null);
+      createOrderForm.reset();
+      setSelectedProducts({});
+      toast({
+        title: "Заказ обновлен",
+        description: "Заказ успешно обновлен",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить заказ",
+        variant: "destructive",
+      });
+    },
+  });
+
   const sendToFactoryMutation = useMutation({
     mutationFn: async (data: { orderId: string; formData: SendToFactoryData }) => {
       return await apiRequest("POST", `/api/orders/${data.orderId}/send-to-factory`, data.formData);
@@ -248,7 +272,13 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       items: orderItems
     };
     
-    createOrderMutation.mutate(orderData);
+    if (editingOrderId) {
+      // Edit existing order
+      updateOrderMutation.mutate({ orderId: editingOrderId, orderData });
+    } else {
+      // Create new order
+      createOrderMutation.mutate(orderData);
+    }
   };
 
   const handleSendToFactory = (data: SendToFactoryData) => {
@@ -281,6 +311,27 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     setSendingOrderId(null);
     setEditingOrderId(null);
     form.reset();
+  };
+
+  // Open order edit dialog for customers
+  const openOrderEditDialog = (order: any) => {
+    setEditingOrderId(order.id);
+    
+    createOrderForm.reset({
+      title: order.title || "",
+      description: order.description || "",
+      constructionType: order.constructionType || "",
+      factoryId: order.factoryId || "",
+      deliveryAddress: order.deliveryAddress || "",
+      contactPerson: order.contactPerson || "",
+      contactPhone: order.contactPhone || "",
+      estimatedBudget: order.estimatedBudget || "",
+      priority: order.priority || "normal",
+      deadline: order.deadline ? new Date(order.deadline * 1000).toISOString().split('T')[0] : "",
+      notes: order.notes || ""
+    });
+    
+    setIsCreateOrderOpen(true);
   };
 
   const formatPrice = (price: number) => {
@@ -366,7 +417,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setEditingOrderId(order.id)}
+                            onClick={() => openOrderEditDialog(order)}
                             className="h-6 px-2 text-xs"
                             data-testid={`button-edit-order-${order.id}`}
                           >
@@ -630,9 +681,14 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
         <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Создать новый заказ</DialogTitle>
+              <DialogTitle>
+                {editingOrderId ? "Редактировать заказ" : "Создать новый заказ"}
+              </DialogTitle>
               <DialogDescription>
-                Заполните информацию о заказе металлоконструкций
+                {editingOrderId 
+                  ? "Внесите изменения в информацию о заказе" 
+                  : "Заполните информацию о заказе металлоконструкций"
+                }
               </DialogDescription>
             </DialogHeader>
             <Form {...createOrderForm}>
@@ -951,10 +1007,13 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   </Button>
                   <Button
                     type="submit"
-                    disabled={createOrderMutation.isPending}
+                    disabled={createOrderMutation.isPending || updateOrderMutation.isPending}
                     data-testid="button-submit-order"
                   >
-                    {createOrderMutation.isPending ? "Создание..." : "Создать заказ"}
+                    {editingOrderId ? 
+                      (updateOrderMutation.isPending ? "Сохранение..." : "Сохранить изменения") : 
+                      (createOrderMutation.isPending ? "Создание..." : "Создать заказ")
+                    }
                   </Button>
                 </div>
               </form>
