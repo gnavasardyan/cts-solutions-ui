@@ -296,6 +296,17 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     });
   };
 
+  const openSendToFactoryDialog = (orderId: string) => {
+    setSendingOrderId(orderId);
+    setEditingOrderId(null);
+    form.reset({
+      factoryId: "",
+      priority: "normal",
+      deadline: "",
+      notes: "",
+    });
+  };
+
   const openEditDialog = (order: any) => {
     setEditingOrderId(order.id);
     setSendingOrderId(null);
@@ -321,7 +332,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     
     // Parse order data from notes field (where it's stored)
     const notes = order.notes || "";
-    const lines = notes.split('\n').filter(line => line.trim());
+    const lines = notes.split('\n').filter((line: string) => line.trim());
     
     // Extract title (first line, before " - ")
     const firstLine = lines[0] || "";
@@ -469,6 +480,19 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           >
                             <Send className="h-3 w-3 mr-1" />
                             Отправить
+                          </Button>
+                        )}
+                        {/* Send to Factory Button for customers */}
+                        {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed') && !order.factoryId && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openSendToFactoryDialog(order.id)}
+                            className="h-6 px-2 text-xs text-green-600"
+                            data-testid={`button-send-to-factory-${order.id}`}
+                          >
+                            <Factory className="h-3 w-3 mr-1" />
+                            На завод
                           </Button>
                         )}
                       </div>
@@ -1290,7 +1314,19 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                   </div>
                 </div>
 
-
+                {/* Send to Factory Button for customers */}
+                {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed') && !order.factoryId && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      onClick={() => openSendToFactoryDialog(order.id)}
+                      className="w-full"
+                      data-testid={`button-send-to-factory-full-${order.id}`}
+                    >
+                      <Factory className="h-4 w-4 mr-2" />
+                      Отправить на завод
+                    </Button>
+                  </div>
+                )}
 
                 {/* Admin info */}
                 {user?.role === 'administrator' && order.customerId !== user.id && (
