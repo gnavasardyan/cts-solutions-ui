@@ -975,77 +975,163 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
           </Button>
         </div>
 
-        {/* Orders Table View for Customer */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Мои заказы</h2>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Номер заказа</TableHead>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Завод</TableHead>
-                  <TableHead>Дата создания</TableHead>
-                  <TableHead>Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(orders as any[])?.filter((order: any) => order.customerId === user.id).map((order: any) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm">
-                      #{order.id.slice(-8).toUpperCase()}
-                    </TableCell>
-                    <TableCell className="font-medium">{order.title || order.orderNumber}</TableCell>
-                    <TableCell>
+        {/* Customer Orders View - Cards Layout */}
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (orders as any[])?.filter((order: any) => order.customerId === user.id).length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Заказов пока нет
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Создайте первый заказ используя кнопку "Создать заказ"
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {(orders as any[])?.filter((order: any) => order.customerId === user.id).map((order: any) => (
+              <Card key={order.id} className="hover:shadow-lg transition-shadow" data-testid={`order-${order.id}`}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">
+                        {order.title || `Заказ #${order.id.slice(-8).toUpperCase()}`}
+                      </CardTitle>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {formatDate(order.createdAt)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Badge variant={ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.variant || "outline"}>
                         {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {order.factoryId ? (
-                        (() => {
-                          const factory = (factories as any[])?.find((f: any) => f.id === order.factoryId);
-                          return factory ? factory.name : 'Завод не найден';
-                        })()
-                      ) : (
-                        <span className="text-gray-400">Не назначен</span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      {order.constructionType && (
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600 dark:text-gray-400">Тип:</span>
+                          <span className="font-medium">{order.constructionType}</span>
+                        </div>
                       )}
-                    </TableCell>
-                    <TableCell>{formatDate(order.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {canEditOrder(order) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setEditingOrderId(order.id);
-                              setIsCreateOrderOpen(true);
-                            }}
-                            data-testid={`button-edit-${order.id}`}
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
-                        )}
-                        {order.status === 'confirmed' && !order.factoryId && user?.role === 'customer_operator' && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => sendOrderToFactory(order.id)}
-                            data-testid={`button-send-factory-${order.id}`}
-                          >
-                            Отправить на завод
-                          </Button>
-                        )}
+                      {order.deliveryAddress && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-600 dark:text-gray-400">Адрес:</span>
+                          <span className="font-medium">{order.deliveryAddress}</span>
+                        </div>
+                      )}
+                      {order.contactPerson && (
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600 dark:text-gray-400">Контакт:</span>
+                          <span className="font-medium">{order.contactPerson}</span>
+                        </div>
+                      )}
+                      {order.deadline && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600 dark:text-gray-400">Срок:</span>
+                          <span className="font-medium">{formatDate(order.deadline)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {order.description && (
+                      <div className="pt-2 border-t">
+                        <div className="flex items-start gap-2">
+                          <FileText className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                          <div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Описание:</div>
+                            <div className="text-sm">{order.description}</div>
+                          </div>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    )}
+
+                    {order.factoryId && (
+                      <div className="pt-2 border-t">
+                        {(() => {
+                          const factory = (factories as any[])?.find((f: any) => f.id === order.factoryId);
+                          return (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Factory className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600 dark:text-gray-400">Завод:</span>
+                              <div className="font-medium">
+                                {factory ? factory.name : 'Завод не найден'}
+                              </div>
+                              {factory && (
+                                <div className="text-xs text-gray-600 dark:text-gray-400">
+                                  {factory.location}
+                                  {order.priority && order.priority !== 'normal' && (
+                                    <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 rounded text-xs">
+                                      {order.priority === 'urgent' ? 'Срочный' : 
+                                       order.priority === 'high' ? 'Высокий' : 
+                                       order.priority === 'low' ? 'Низкий' : 'Обычный'}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Action buttons for customer */}
+                    <div className="flex justify-end gap-2 pt-4">
+                      {canEditOrder(order) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingOrderId(order.id);
+                            setIsCreateOrderOpen(true);
+                          }}
+                          data-testid={`button-edit-${order.id}`}
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </Button>
+                      )}
+                      
+                      {order.status === 'confirmed' && !order.factoryId && (
+                        <Button
+                          onClick={() => sendOrderToFactory(order.id)}
+                          data-testid={`button-send-factory-${order.id}`}
+                        >
+                          <Factory className="h-4 w-4 mr-2" />
+                          Отправить на завод
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
+        )}
 
         {/* Create Order Dialog для заказчиков - уже определен выше */}
       </div>
