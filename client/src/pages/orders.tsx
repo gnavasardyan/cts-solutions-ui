@@ -203,7 +203,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       setSelectedProducts({});
       toast({
         title: "Заказ обновлен",
-        description: "Заказ успешно обновлен",
+        description: "Изменения успешно сохранены",
       });
     },
     onError: (error: any) => {
@@ -321,26 +321,37 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     
     // Parse order data from notes field (where it's stored)
     const notes = order.notes || "";
-    const titleMatch = notes.match(/^([^-\n]+)/);
-    const descMatch = notes.match(/ - ([^\n]+)/);
-    const typeMatch = notes.match(/Тип: ([^\n]+)/);
-    const addressMatch = notes.match(/Адрес: ([^\n]+)/);
-    const contactMatch = notes.match(/Контакт: ([^(]+) \(([^)]+)\)/);
-    const budgetMatch = notes.match(/Бюджет: ([^\n]+)/);
-    const notesMatch = notes.match(/Примечания: ([\s\S]+)/);
+    const lines = notes.split('\n').filter(line => line.trim());
+    
+    // Extract title (first line, before " - ")
+    const firstLine = lines[0] || "";
+    const titleMatch = firstLine.match(/^([^-]+)(?:\s-\s(.+))?$/);
+    const title = titleMatch ? titleMatch[1].trim() : "";
+    const description = titleMatch && titleMatch[2] ? titleMatch[2].trim() : "";
+    
+    // Extract other fields
+    const typeMatch = notes.match(/Тип:\s*([^\n]+)/);
+    const addressMatch = notes.match(/Адрес:\s*([^\n]+)/);
+    const contactMatch = notes.match(/Контакт:\s*([^(]+)\s*\(([^)]+)\)/);
+    const budgetMatch = notes.match(/Бюджет:\s*([^\n]+)/);
+    const notesMatch = notes.match(/Примечания:\s*([\s\S]+?)$/);
+    
+    console.log('Editing order:', { order, notes, title, description, typeMatch, addressMatch, contactMatch });
     
     createOrderForm.reset({
-      title: titleMatch ? titleMatch[1].trim() : "",
-      description: descMatch ? descMatch[1].trim() : "",
-      constructionType: typeMatch ? typeMatch[1] : "",
+      title: title,
+      description: description,
+      constructionType: typeMatch ? typeMatch[1].trim() : "",
       factoryId: order.factoryId || "",
-      deliveryAddress: addressMatch ? addressMatch[1] : "",
+      deliveryAddress: addressMatch ? addressMatch[1].trim() : "",
       contactPerson: contactMatch ? contactMatch[1].trim() : "",
-      contactPhone: contactMatch ? contactMatch[2] : "",
-      estimatedBudget: budgetMatch ? budgetMatch[1] : "",
+      contactPhone: contactMatch ? contactMatch[2].trim() : "",
+      estimatedBudget: budgetMatch ? budgetMatch[1].trim() : "",
       priority: order.priority || "normal",
       deadline: order.deadline ? new Date(order.deadline * 1000).toISOString().split('T')[0] : "",
-      notes: notesMatch ? notesMatch[1].trim() : ""
+      notes: notesMatch ? notesMatch[1].trim() : "",
+      status: order.status || "draft",
+      totalAmount: order.totalAmount || 0
     });
     
     // Load existing order items into selectedProducts
