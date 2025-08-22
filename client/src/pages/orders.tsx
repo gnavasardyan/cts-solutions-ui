@@ -483,7 +483,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           </Button>
                         )}
                         {/* Send to Factory Button for customers */}
-                        {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed') && !order.factoryId && (
+                        {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed' || order.status === 'draft') && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1315,7 +1315,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 </div>
 
                 {/* Send to Factory Button for customers */}
-                {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed') && !order.factoryId && (
+                {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed' || order.status === 'draft') && (
                   <div className="mt-4 pt-4 border-t">
                     <Button
                       onClick={() => openSendToFactoryDialog(order.id)}
