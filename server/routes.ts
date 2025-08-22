@@ -367,10 +367,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/orders/:id/status', authenticateToken, requireRole([UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR]), async (req: any, res) => {
+  app.patch('/api/orders/:id/status', authenticateToken, async (req: any, res) => {
     try {
       const { status } = req.body;
-      await storage.updateOrderStatus(req.params.id, status);
+      const orderId = req.params.id;
+      
+      // Check permissions based on user role and status change
+      if (req.user?.role === UserRoles.CUSTOMER_OPERATOR) {
+        // Customer operators can only change draft to pending
+        const order = await storage.getOrderById(orderId);
+        if (!order) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+        if (order.status !== 'draft' || status !== 'pending') {
+          return res.status(403).json({ message: "Customer operators can only submit draft orders" });
+        }
+      } else if (![UserRoles.ADMINISTRATOR, UserRoles.FACTORY_OPERATOR].includes(req.user?.role)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.updateOrderStatus(orderId, status);
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating order status:", error);

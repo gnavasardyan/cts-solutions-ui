@@ -74,6 +74,44 @@ export default function OrdersPage() {
     return user.role === 'administrator' || order.customerId === user.id || order.userId === user.id;
   };
 
+  // Check if user can edit order
+  const canEditOrder = (order: any) => {
+    if (!user) return false;
+    return user.role === 'customer_operator' && (order.status === 'draft' || order.status === 'pending');
+  };
+
+  // Check if user can change order status
+  const canChangeStatus = (order: any) => {
+    if (!user) return false;
+    if (user.role === 'customer_operator') {
+      return order.status === 'draft'; // Customer can only submit draft orders
+    }
+    return false;
+  };
+
+  // Handle status change
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      await apiRequest(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      toast({
+        title: "Успешно",
+        description: newStatus === 'pending' ? "Заказ отправлен в обработку" : "Статус заказа изменен",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось изменить статус заказа",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['/api/orders'],
@@ -246,7 +284,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
   };
 
   const formatPrice = (price: number) => {
-    return "0 ₽"; // Always show 0 ₽ as requested
   };
 
   const formatDate = (timestamp: number) => {
@@ -323,7 +360,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      0 ₽
                     </div>
                   </div>
                 </div>
@@ -336,7 +372,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                     Состав заказа
                   </h4>
                   <div className="space-y-2">
-                    {order.items.map((item: any, index: number) => (
+                    {order.items && order.items.length > 0 ? order.items.map((item: any, index: number) => (
                       <div 
                         key={index} 
                         className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded"
@@ -350,13 +386,17 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт.
+                            {item.quantity} шт
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Состав заказа не указан
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -649,7 +689,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                             <div className="flex-1">
                               <div className="font-medium text-sm">{product.name}</div>
                               <div className="text-xs text-gray-600 dark:text-gray-400">
-                                {product.gost} • {product.weight} кг • 0 ₽
                               </div>
                               {product.description && (
                                 <div className="text-xs text-gray-500 mt-1">{product.description}</div>
@@ -699,13 +738,11 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           return product ? (
                             <div key={productId} className="flex justify-between">
                               <span>{product.name} × {quantity}</span>
-                              <span>0 ₽</span>
                             </div>
                           ) : null;
                         })}
                         <div className="border-t pt-1 mt-2 font-medium flex justify-between">
                           <span>Общая сумма:</span>
-                          <span>0 ₽</span>
                         </div>
                       </div>
                     </div>
@@ -981,7 +1018,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                       {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]?.label || order.status}
                     </Badge>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      0 ₽
                     </div>
                   </div>
                 </div>
@@ -994,7 +1030,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                     Состав заказа
                   </h4>
                   <div className="space-y-2">
-                    {order.items.map((item: any, index: number) => (
+                    {order.items && order.items.length > 0 ? order.items.map((item: any, index: number) => (
                       <div 
                         key={index} 
                         className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded"
@@ -1008,13 +1044,17 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">
-                            {item.quantity} шт.
+                            {item.quantity} шт
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Состав заказа не указан
+                      </div>
+                    )}
                   </div>
                 </div>
 
