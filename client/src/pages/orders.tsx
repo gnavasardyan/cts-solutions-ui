@@ -58,11 +58,11 @@ const createOrderSchema = z.object({
 type CreateOrderData = z.infer<typeof createOrderSchema>;
 
 export default function OrdersPage() {
-  const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
+
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<{[key: string]: number}>({});
-  const [showSendDialog, setShowSendDialog] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -279,12 +279,16 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     }
   };
 
-  const handleSendToFactory = async (data: SendToFactoryData) => {
-    if (!sendingOrderId) return;
 
+
+
+
+  const sendOrderToFactory = async (orderId: string) => {
     try {
-      console.log('Sending order to factory:', sendingOrderId, data);
-      await apiRequest("PATCH", `/api/orders/${sendingOrderId}/send-to-factory`, data);
+      console.log('Sending order to factory directly:', orderId);
+      await apiRequest("PATCH", `/api/orders/${orderId}/status`, { 
+        status: "sent_to_factory"
+      });
       
       toast({
         title: "Успешно",
@@ -292,7 +296,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      closeSendDialog();
     } catch (error) {
       console.error('Error sending to factory:', error);
       toast({
@@ -301,46 +304,6 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
         variant: "destructive",
       });
     }
-  };
-
-  const openSendDialog = (orderId: string) => {
-    setSendingOrderId(orderId);
-    setEditingOrderId(null);
-    form.reset({
-      factoryId: "",
-      priority: "normal",
-      deadline: "",
-      notes: "",
-    });
-  };
-
-  const openSendToFactoryDialog = (orderId: string) => {
-    console.log('Opening send to factory dialog for order:', orderId);
-    console.log('Current showSendDialog state:', showSendDialog);
-    console.log('Current isCreateOrderOpen state:', isCreateOrderOpen);
-    
-    // Close all other dialogs first
-    setIsCreateOrderOpen(false);
-    setEditingOrderId(null);
-    
-    // Set the order and show dialog
-    setSendingOrderId(orderId);
-    setShowSendDialog(true);
-    
-    console.log('After setting - showSendDialog should be true');
-    
-    // Reset form
-    form.reset({
-      factoryId: "",
-      priority: "normal",
-      deadline: "",
-      notes: "",
-    });
-    
-    // Force re-render check
-    setTimeout(() => {
-      console.log('1 second later - showSendDialog state:', showSendDialog);
-    }, 1000);
   };
 
   const openEditDialog = (order: any) => {
@@ -356,11 +319,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
     });
   };
 
-  const closeSendDialog = () => {
-    setShowSendDialog(false);
-    setSendingOrderId(null);
-    form.reset();
-  };
+
 
   // Open order edit dialog for customers
   const openOrderEditDialog = (order: any) => {
@@ -523,7 +482,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => openSendToFactoryDialog(order.id)}
+                            onClick={() => sendOrderToFactory(order.id)}
                             className="h-6 px-2 text-xs text-green-600"
                             data-testid={`button-send-to-factory-${order.id}`}
                           >
@@ -1354,7 +1313,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                 {user?.role === 'customer_operator' && (order.status === 'pending' || order.status === 'confirmed' || order.status === 'draft') && (
                   <div className="mt-4 pt-4 border-t">
                     <Button
-                      onClick={() => openSendToFactoryDialog(order.id)}
+                      onClick={() => sendOrderToFactory(order.id)}
                       className="w-full"
                       data-testid={`button-send-to-factory-full-${order.id}`}
                     >
@@ -1379,12 +1338,11 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
         </div>
       )}
 
-      {/* Send to Factory Dialog */}
-      {console.log('Rendering dialog with showSendDialog:', showSendDialog, 'sendingOrderId:', sendingOrderId)}
-      <Dialog open={showSendDialog} onOpenChange={closeSendDialog}>
-        <DialogContent className="max-w-md">
+      {/* Create Order Dialog */}
+      <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Отправить заказ на завод</DialogTitle>
+            <DialogTitle>{editingOrderId ? 'Изменить заказ' : 'Создать заказ'}</DialogTitle>
             <DialogDescription>
               Выберите завод и укажите параметры для производства
             </DialogDescription>
