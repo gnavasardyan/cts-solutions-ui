@@ -1145,7 +1145,7 @@ ${data.notes ? `Примечания: ${data.notes}` : ''}`,
                         </Button>
                       )}
                       
-                      {(order.status === 'confirmed' || order.status === 'draft') && !order.factoryId && (
+                      {(order.status === 'confirmed' || order.status === 'draft') && order.status !== 'sent_to_factory' && (
                         <Button
                           onClick={() => sendOrderToFactory(order.id)}
                           data-testid={`button-send-factory-${order.id}`}
